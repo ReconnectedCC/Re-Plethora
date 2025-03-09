@@ -48,7 +48,7 @@ group = mavenGroup
 
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
-    jvmTarget = "21"
+    jvmTarget = "17"
     apiVersion = "1.9"
     languageVersion = "1.9"
   }
