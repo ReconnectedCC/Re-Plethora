@@ -30,6 +30,7 @@ object VanillaMetaRegistration {
       provider("livingEntity", LivingEntityMeta)
       provider("playerEntity", PlayerEntityMeta)
       provider("sheepEntity", SheepEntityMeta)
+      provider("villagerEntity", VillagerEntityMeta)
 
       // integration.vanilla.item
       provider("basicItem", BasicItemMeta)
