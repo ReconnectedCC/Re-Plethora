@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "re-plethora",
+  "id": "plethora",
   "version": "${version}",
   "name": "Re:Plethora",
   "description": "Peripheral provider for ComputerCraft, ported to Fabric, maintained by ReconnectedCC.",
