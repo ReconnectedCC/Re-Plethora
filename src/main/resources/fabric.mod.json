@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "plethora",
+  "id": "re-plethora",
   "version": "${version}",
-  "name": "Plethora",
-  "description": "Peripheral provider for ComputerCraft, ported to Fabric.",
+  "name": "Re:Plethora",
+  "description": "Peripheral provider for ComputerCraft, ported to Fabric, maintained by ReconnectedCC.",
   "authors": [
     "SquidDev",
     "Lemmmy",
@@ -13,7 +13,7 @@
   ],
   "contact": {
     "website": "https://plethora.madefor.cc",
-    "repo": "https://github.com/SwitchCraftCC/Plethora-Fabric"
+    "repo": "https://github.com/ReconnectedCC/Plethora-Fabric"
   },
   "license": "MIT",
   "icon": "assets/plethora/icon.png",
