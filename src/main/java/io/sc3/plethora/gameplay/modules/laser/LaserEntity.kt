@@ -57,16 +57,18 @@ class LaserEntity : Entity, IPlayerOwnable {
 
   private var shooterPos: WorldPosition? = null
 
+  private var canDestroyBlocks: Boolean = true
+
   var potency = 0.0f
   var spawnTime = world.time
 
   constructor(entityType: EntityType<out LaserEntity>, world: World) : super(entityType, world)
 
   constructor(world: World, @Nonnull shooter: Entity,
-              inaccuracy: Float, potency: Float) : super(Registration.LASER_ENTITY, world) {
+              inaccuracy: Float, potency: Float, canDestroyBlocks: Boolean = true) : super(Registration.LASER_ENTITY, world) {
     this.potency = potency
     setShooter(shooter, PlayerHelpers.getProfile(shooter))
-
+    this.canDestroyBlocks = canDestroyBlocks
     val yaw = shooter.yaw.toDouble()
     val pitch = shooter.pitch
 
@@ -86,8 +88,9 @@ class LaserEntity : Entity, IPlayerOwnable {
     shoot(vel.x, vel.y, vel.z, 1.5f, inaccuracy)
   }
 
-  constructor(world: World, shooterPos: Vec3d) : this(Registration.LASER_ENTITY, world) {
+  constructor(world: World, shooterPos: Vec3d, canDestroyBlocks: Boolean = true) : this(Registration.LASER_ENTITY, world) {
     this.shooterPos = WorldPosition(world, shooterPos)
+    this.canDestroyBlocks = canDestroyBlocks
   }
 
   fun setShooter(shooter: Entity?, profile: GameProfile?) {
@@ -401,7 +404,8 @@ class LaserEntity : Entity, IPlayerOwnable {
 
   private fun canBreakBlock(world: World, pos: BlockPos, drop: Boolean, player: PlayerEntity): Boolean {
     // Injection point for ClaimKit
-    return world.canPlayerModifyAt(player, pos)
+    // Also prevent breaking if Laser is set not to break blocks
+    return (canDestroyBlocks && world.canPlayerModifyAt(player, pos))
   }
 
   private fun tryBreakBlock(world: World, pos: BlockPos, drop: Boolean, player: PlayerEntity): Boolean {
