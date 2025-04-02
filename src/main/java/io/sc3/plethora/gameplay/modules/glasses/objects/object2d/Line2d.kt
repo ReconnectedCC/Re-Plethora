@@ -63,26 +63,47 @@ class Line2d(
   @Environment(EnvType.CLIENT)
   override fun draw(canvas: CanvasClient, ctx: DrawContext, consumers: VertexConsumerProvider?) {
     setupFlat()
-    RenderSystem.lineWidth(scale)
 
     val matrices = ctx.matrices
     val buffer = Tessellator.getInstance().buffer
     val matrix = matrices.peek().positionMatrix
     val normal = matrices.peek().normalMatrix
 
-    RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram)
+    // OpenGL has some limitations on normal lines, so we instead will create a quad,
+    // and use two triangles to "build" the quad.
+    RenderSystem.setShader(GameRenderer::getPositionColorProgram)
+    buffer.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
 
-    buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES)
-    buffer
-      .vertex(matrix, start.x.toFloat(), start.y.toFloat(), 0f)
-      .color(red, green, blue, alpha)
-      .normal(normal, 0f, 1f, 0f).next()
-    buffer
-      .vertex(matrix, end.x.toFloat(), end.y.toFloat(), 0f)
-      .color(red, green, blue, alpha)
-      .normal(normal, 0f, 1f, 0f).next()
+    // Calculate thickness and the perpendicular direction to do it in.
+    val dx = (end.y - start.y).toFloat()
+    val dy = -(end.x - start.x).toFloat()
+    val length = kotlin.math.sqrt(dx * dx + dy * dy)
+    val thickness = scale / 2f
+
+    // Normalize and scale by thickness
+    val offsetX = (dx / length) * thickness
+    val offsetY = (dy / length) * thickness
+
+    // Create four corners of the quad
+    val x1 = start.x.toFloat() - offsetX
+    val y1 = start.y.toFloat() - offsetY
+    val x2 = start.x.toFloat() + offsetX
+    val y2 = start.y.toFloat() + offsetY
+    val x3 = end.x.toFloat() - offsetX
+    val y3 = end.y.toFloat() - offsetY
+    val x4 = end.x.toFloat() + offsetX
+    val y4 = end.y.toFloat() + offsetY
+
+    // First Triangle: x1/y1 -> x2/y2 -> x3/y3
+    buffer.vertex(matrix, x1, y1, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+
+    // Second Triangle: x3/y3 -> x2/y2 -> x4/y4
+    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x4, y4, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())
-    RenderSystem.lineWidth(1f)
   }
 }
