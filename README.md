@@ -1,6 +1,6 @@
 # Re-Plethora
-Re-Plethora is a fork of [Plethora-Fabric](https://github.com/SwitchCraftCC/Plethora-Fabric), following it's inactive state since SwitchCraft has been closed.  
-This fork is mantained by the ReconnectedCC team, with the main goal of keeping compatibility with ComputerCraft as well as, in the far future, reinstatement of the original Plethora's features such as Neural Interfaces on Mobs and Computer Minecarts (perhaps one step further and we do Computer Boats!).
+Re-Plethora is a fork of [Plethora-Fabric](https://github.com/SwitchCraftCC/Plethora-Fabric), following its inactive state since SwitchCraft has been closed.  
+This fork is maintained by the ReconnectedCC team, with the main goal of keeping compatibility with ComputerCraft as well as, in the far future, reinstatement of the original Plethora's features such as Neural Interfaces on Mobs and Computer Minecarts (perhaps one step further and we do Computer Boats!).
 
 Below follows Plethora-Fabric's README:
 
