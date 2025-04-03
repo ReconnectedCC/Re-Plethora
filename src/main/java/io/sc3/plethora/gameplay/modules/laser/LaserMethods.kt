@@ -30,15 +30,14 @@ object LaserMethods {
 
   val FIRE = SubtargetedModuleMethod.of(
     "fire", PlethoraModules.LASER_M, IWorldLocation::class.java,
-    "function(yaw:number, pitch:number, potency:number) -- Fire a laser in a set direction",
+    "function(yaw:number, pitch:number, potency:number, canDestroyBlocks:boolean) -- Fire a laser in a set direction",
     ::fire
   )
   private fun fire(unbaked: IUnbakedContext<IModuleContainer>, args: IArguments): FutureMethodResult {
     val yaw = Helpers.normaliseAngle(args.getFiniteDouble(0))
     val pitch = Helpers.normaliseAngle(args.getFiniteDouble(1))
     val potency = args.assertDoubleBetween(2, cfg.minimumPotency, cfg.maximumPotency, "Potency out of range (%s).").toFloat()
-    val old = args.optBoolean(3, false)
-
+    val canDestroyBlocks = args.optBoolean(3, true)
     val motionX = -sin(yaw / 180.0f * PI.toFloat()) * cos(pitch / 180.0f * PI.toFloat())
     val motionZ =  cos(yaw / 180.0f * PI.toFloat()) * cos(pitch / 180.0f * PI.toFloat())
     val motionY = -sin(pitch / 180.0f * PI.toFloat())
@@ -48,7 +47,7 @@ object LaserMethods {
       val location = ctx.getContext(ContextKeys.ORIGIN, IWorldLocation::class.java)
       val pos = location.loc
 
-      val laser = LaserEntity(location.world, pos)
+      val laser = LaserEntity(location.world, pos,canDestroyBlocks)
 
       val ownable = ctx.getContext(ContextKeys.ORIGIN, IPlayerOwnable::class.java)
       val entity = ctx.getContext(ContextKeys.ORIGIN, Entity::class.java)
