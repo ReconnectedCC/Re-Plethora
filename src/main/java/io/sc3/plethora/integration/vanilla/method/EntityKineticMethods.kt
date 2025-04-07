@@ -32,10 +32,11 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 object EntityKineticMethods {
   private val LOOK_FLAGS = EnumSet.of(PositionFlag.X, PositionFlag.Y, PositionFlag.Z)
-  private val trackedDigEvents = mutableMapOf<ServerPlayerEntity, BlockPos>()
+  private val trackedDigEvents = ConcurrentHashMap<ServerPlayerEntity, BlockPos>();
 
   val LOOK = SubtargetedModuleMethod.of(
     "look", KINETIC_M, LivingEntity::class.java,
