@@ -1,6 +1,11 @@
 package io.sc3.plethora.gameplay.modules.laser
 
+import com.github.quiltservertools.ledger.Ledger.api
+import com.github.quiltservertools.ledger.actions.ActionType
+import com.github.quiltservertools.ledger.actionutils.ActionFactory.blockBreakAction
+import com.github.quiltservertools.ledger.utility.Sources
 import com.mojang.authlib.GameProfile
+import eu.pb4.common.protection.api.CommonProtection
 import io.sc3.plethora.Plethora
 import io.sc3.plethora.Plethora.config
 import io.sc3.plethora.api.IPlayerOwnable
@@ -14,7 +19,6 @@ import io.sc3.plethora.util.PlayerHelpers
 import io.sc3.plethora.util.WorldPosition
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.nbt.NbtElement
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.block.FluidBlock
@@ -28,6 +32,7 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtElement
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.world.ServerWorld
@@ -405,17 +410,32 @@ class LaserEntity : Entity, IPlayerOwnable {
   private fun canBreakBlock(world: World, pos: BlockPos, drop: Boolean, player: PlayerEntity): Boolean {
     // Injection point for ClaimKit
     // Also prevent breaking if Laser is set not to break blocks
-    return (canDestroyBlocks && world.canPlayerModifyAt(player, pos))
+    return (CommonProtection.canBreakBlock(world, pos, player.gameProfile, player) && canDestroyBlocks && world.canPlayerModifyAt(player, pos))
   }
 
   private fun tryBreakBlock(world: World, pos: BlockPos, drop: Boolean, player: PlayerEntity): Boolean {
-    // Injection point for ClaimKit
-    return world.breakBlock(pos, drop, player)
+    val perm = CommonProtection.canBreakBlock(world, pos, player.gameProfile, player)
+    var breakBlock = false
+    if (perm) {
+      try {
+        breakBlock = world.breakBlock(pos, drop, player)
+        val laserBreak: ActionType =
+          blockBreakAction(world, pos, world.getBlockState(pos), player, world.getBlockEntity(pos), Sources.PLAYER)
+        if (breakBlock) {
+          api.logAction(laserBreak)
+        }
+      } catch (_: ClassNotFoundException) {
+      } catch (_: NoClassDefFoundError) {
+      }
+      return breakBlock
+    }
+    return false
   }
 
   private fun canDamageEntity(entity: Entity): Boolean {
     // Injection point for ClaimKit
-    return true
+    val player = this.getShooterPlayer() ?: return true
+    return CommonProtection.canDamageEntity(player.world, entity, player.gameProfile, player)
   }
 
   companion object {

@@ -5,7 +5,7 @@ plugins {
   val kotlinVersion: String by System.getProperties()
   kotlin("jvm").version(kotlinVersion)
 
-  id("fabric-loom") version "1.7-SNAPSHOT"
+  id("fabric-loom") version "1.10.+"
   id("maven-publish")
   id("signing")
   id("com.modrinth.minotaur") version "2.+"
@@ -41,6 +41,8 @@ val scLibraryVersion: String by project
 // ===========================
 val scPeripheralsVersion: String by project
 val scGoodiesVersion: String by project
+val common_protection_version: String by project
+val ledger_version: String by project
 
 val archivesBaseName = "plethora"
 version = modVersion
@@ -59,6 +61,7 @@ repositories {
     content {
       includeModule("io.sc3", "sc-library")
       includeModule("io.sc3", "sc-peripherals")
+      includeModule("com.github.quiltservertools", "Ledger")
     }
   }
 
@@ -103,6 +106,13 @@ repositories {
     // fabric-permissions-api (dependency of sc-goodies)
     content {
       includeModule("me.lucko", "fabric-permissions-api")
+    }
+  }
+  maven("https://maven.nucleoid.xyz/") {
+    // Common Protection API
+    content {
+      includeGroup("eu.pb4")
+      includeGroup("xyz.nucleoid")
     }
   }
 }
@@ -150,7 +160,12 @@ dependencies {
   // ===========================
   // sc-peripherals
   modCompileOnly("io.sc3:sc-peripherals:${scPeripheralsVersion}")
+  // sc-goodies
   modCompileOnly("io.sc3:sc-goodies:${scGoodiesVersion}")
+  // Common Protection API
+  modImplementation(include("eu.pb4","common-protection-api",common_protection_version))
+  // Ledger
+  modCompileOnly(include("com.github.quiltservertools","Ledger",ledger_version))
 }
 
 tasks {
