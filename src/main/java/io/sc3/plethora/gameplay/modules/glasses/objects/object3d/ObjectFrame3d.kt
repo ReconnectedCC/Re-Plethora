@@ -11,6 +11,7 @@ import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasHandler.WIDTH
 import io.sc3.plethora.gameplay.modules.glasses.objects.BaseObject
 import io.sc3.plethora.gameplay.modules.glasses.objects.ObjectGroup
 import io.sc3.plethora.gameplay.modules.glasses.objects.ObjectRegistry.FRAME_3D
+import io.sc3.plethora.gameplay.modules.glasses.objects.Scalable
 import io.sc3.plethora.util.ByteBufUtils
 import io.sc3.plethora.util.DirtyingProperty
 import net.minecraft.client.MinecraftClient
@@ -22,26 +23,27 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
 
-private const val SCALE = 1 / 64.0f
-
 class ObjectFrame3d(
   id: Int,
   parent: Int
-) : BaseObject(id, parent, FRAME_3D), ObjectGroup.Frame2d, Positionable3d, Rotatable3d, DepthTestable {
+) : BaseObject(id, parent, FRAME_3D), Scalable, ObjectGroup.Frame2d, Positionable3d, Rotatable3d, DepthTestable {
   override var position by DirtyingProperty(Vec3d.ZERO!!)
   override var rotation: Vec3d? by DirtyingProperty(null)
   override var hasDepthTest by DirtyingProperty(true)
+  override var scale by DirtyingProperty(1/64f)
 
   override fun readInitial(buf: PacketByteBuf) {
     position = ByteBufUtils.readVec3d(buf)
     rotation = ByteBufUtils.readOptVec3d(buf)
     hasDepthTest = buf.readBoolean()
+    scale = buf.readFloat()
   }
 
   override fun writeInitial(buf: PacketByteBuf) {
     ByteBufUtils.writeVec3d(buf, position)
     ByteBufUtils.writeOptVec3d(buf, rotation)
     buf.writeBoolean(hasDepthTest)
+    buf.writeFloat(scale)
   }
 
   override fun draw(canvas: CanvasClient, ctx: DrawContext, consumers: VertexConsumerProvider?) {
@@ -87,7 +89,7 @@ class ObjectFrame3d(
     matrices.push()
 
     matrices.translate(position.x, position.y, position.z)
-    matrices.scale(SCALE, -SCALE, SCALE)
+    matrices.scale(scale, -scale, scale)
     applyRotation(ctx, false)
 
     if (hasDepthTest) {
