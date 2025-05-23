@@ -299,3 +299,7 @@ publishing {
   }
 }
 
+kotlin {
+  // hints gradle which ide to use, including for compiling java.
+  jvmToolchain(17)
+}
