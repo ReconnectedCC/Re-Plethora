@@ -63,6 +63,13 @@ object EntityMeta : BaseMetaProvider<Entity>(
       "yaw"   to Helpers.normaliseAngle(entity.yaw.toDouble())
     )
 
+    val eyeOffsetPos = entity.eyePos.subtract(entity.pos)
+    result["eyeOffset"] = mapOf(
+      "x" to eyeOffsetPos.x,
+      "y" to eyeOffsetPos.y,
+      "z" to eyeOffsetPos.z
+    )
+
     if (location != null && location.world === entity.entityWorld) {
       val pos = entity.eyePos.subtract(location.loc)
       result["x"] = pos.x
