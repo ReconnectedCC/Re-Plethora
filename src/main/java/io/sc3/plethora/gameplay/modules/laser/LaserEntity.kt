@@ -249,7 +249,8 @@ class LaserEntity : Entity, IPlayerOwnable {
     }
 
     if (!world.isClient && (potency <= 0 || age > lifetime)) {
-      kill()
+      //kill() replaced by discard() for performance reasons
+      discard()
     }
   }
 
@@ -282,7 +283,14 @@ class LaserEntity : Entity, IPlayerOwnable {
 
           // Ignite TNT blocks
           TntBlockInvoker.invokePrimeTnt(world, position, player)
-          world.removeBlock(position, false)
+          val prevBlockState = world.getBlockState(position)
+          val prevBlockEntity = world.getBlockEntity(position)
+          val removeBlock = world.removeBlock(position, false)
+          val laserBreak: ActionType =
+            blockBreakAction(world, position, prevBlockState, player, prevBlockEntity, Sources.FIRE)
+          if (removeBlock) {
+            api.logAction(laserBreak)
+          }
         } else if (block === Blocks.OBSIDIAN) {
           potency -= hardness
 
@@ -418,9 +426,11 @@ class LaserEntity : Entity, IPlayerOwnable {
     var breakBlock = false
     if (perm) {
       try {
+        val prevBlockState = world.getBlockState(pos)
+        val prevBlockEntity = world.getBlockEntity(pos)
         breakBlock = world.breakBlock(pos, drop, player)
         val laserBreak: ActionType =
-          blockBreakAction(world, pos, world.getBlockState(pos), player, world.getBlockEntity(pos), Sources.PLAYER)
+          blockBreakAction(world, pos, prevBlockState, player, prevBlockEntity, Sources.PLAYER)
         if (breakBlock) {
           api.logAction(laserBreak)
         }
@@ -497,7 +507,7 @@ class LaserEntity : Entity, IPlayerOwnable {
         val worstChunkStr = worstChunk?.let { (world, pos, count) -> " ($count in chunk $pos in $world)" } ?: ""
         Plethora.log.info("Removing {} expired lasers{}", toRemove.size, worstChunkStr)
 
-        toRemove.forEach { it.kill() }
+        toRemove.forEach { it.discard() }
       }
     }
 
