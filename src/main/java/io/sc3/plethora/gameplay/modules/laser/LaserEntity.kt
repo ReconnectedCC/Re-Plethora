@@ -30,6 +30,7 @@ import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.projectile.ProjectileEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
@@ -55,8 +56,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class LaserEntity : Entity, IPlayerOwnable {
-  private var shooter: Entity? = null
+class LaserEntity : ProjectileEntity, IPlayerOwnable {
   private var shooterPlayer: PlayerEntity? = null
   private var shooterOwner: GameProfile? = null
 
@@ -89,7 +89,7 @@ class LaserEntity : Entity, IPlayerOwnable {
       -sin(pitch / 180.0 * PI),
       cos(yaw / 180.0 * PI) * cos(pitch / 180.0 * PI)
     ).also { velocity = it }
-
+    setNoGravity(true)
     shoot(vel.x, vel.y, vel.z, 1.5f, inaccuracy)
   }
 
@@ -99,12 +99,12 @@ class LaserEntity : Entity, IPlayerOwnable {
   }
 
   fun setShooter(shooter: Entity?, profile: GameProfile?) {
-    this.shooter = shooter
+    super.setOwner(shooter)
     shooterOwner = profile
   }
 
   override fun initDataTracker() {
-    // TODO: ?
+    // There's no data that needs tracking here
   }
 
   fun shoot(vx: Double, vy: Double, vz: Double, velocity: Float, inaccuracy: Float) {
@@ -124,24 +124,8 @@ class LaserEntity : Entity, IPlayerOwnable {
     prevPitch = pitch
   }
 
-  override fun updateTrackedPositionAndAngles(x: Double, y: Double, z: Double, yaw: Float, pitch: Float,
-                                              interpolationSteps: Int, interpolate: Boolean) {
-    setPosition(x, y, z)
-    setRotation(yaw, pitch)
-  }
-
-  override fun setVelocityClient(x: Double, y: Double, z: Double) {
-    setVelocity(x, y, z)
-    if (prevPitch == 0.0f && prevYaw == 0.0f) {
-      pitch = (MathHelper.atan2(y, sqrt(x * x + z * z)) * 180 / PI).toFloat()
-      yaw = (MathHelper.atan2(x, z) * 180 / PI).toFloat()
-      prevPitch = pitch
-      prevYaw = yaw
-      refreshPositionAndAngles(getX(), getY(), getZ(), yaw, pitch)
-    }
-  }
-
   public override fun writeCustomDataToNbt(nbt: NbtCompound) {
+    super.writeCustomDataToNbt(nbt)
     PlayerHelpers.writeProfile(nbt, shooterOwner)
     shooterPos?.let { nbt.put("shooterPos", it.serializeNbt()) }
     nbt.putFloat("potency", potency)
@@ -149,8 +133,8 @@ class LaserEntity : Entity, IPlayerOwnable {
   }
 
   public override fun readCustomDataFromNbt(nbt: NbtCompound) {
-    shooter = null
     shooterPlayer = null
+    super.readCustomDataFromNbt(nbt)
     shooterOwner = PlayerHelpers.readProfile(nbt)
 
     if (nbt.contains("shooterPos", NbtElement.COMPOUND_TYPE.toInt())) {
@@ -192,7 +176,7 @@ class LaserEntity : Entity, IPlayerOwnable {
         val collisions = world.getOtherEntities(this, boundingBox
           .offset(vel.x * remaining, vel.y * remaining, vel.z * remaining)
           .expand(1.0))
-        val shooter = getShooter()
+        val shooter = getOwner()
 
         var closestDistance = nextPos.squaredDistanceTo(pos)
         var closestEntity: LivingEntity? = null
@@ -237,7 +221,7 @@ class LaserEntity : Entity, IPlayerOwnable {
           if (collision.type == HitResult.Type.BLOCK && world.getBlockState(blockPos).isOf(Blocks.NETHER_PORTAL)) {
             setInNetherPortal(blockPos)
           } else {
-            onImpact(collision)
+            onCollision(collision)
           }
         }
       }
@@ -250,134 +234,129 @@ class LaserEntity : Entity, IPlayerOwnable {
 
     if (!world.isClient && (potency <= 0 || age > lifetime)) {
       //kill() replaced by discard() for performance reasons
-      discard()
+      discardLaser()
     }
   }
 
-  private fun onImpact(hitResult: HitResult) {
-    if (world.isClient) return
-    val world = world as? ServerWorld ?: return
+  override fun onEntityHit(hitResult: EntityHitResult) {
+    val entity: Entity = hitResult.entity
+    val canDamage = canDamageEntity(entity)
+    val canInteract = canInteractEntity(entity)
+    if (entity is LivingEntity && (canDamage || canInteract)) {
+      // Ensure the player is set up correctly
+      syncPositions(true)
 
-    if (hitResult.type == HitResult.Type.BLOCK) {
-      if (hitResult !is BlockHitResult) return
+      val shooter = getOwner()
 
-      val position = BlockPos.ofFloored(hitResult.getPos())
-      val blockState = world.getBlockState(position)
-      val block = blockState.block
+      if (canInteract && entity.type.isIn(PlethoraEntityTags.LASERS_PROVIDE_ENERGY)) {
+        // When shooting blazes, apply a strength effect and heal them instead.
+        val effect = StatusEffectInstance(StatusEffects.STRENGTH, (20 * potency).toInt())
+        entity.addStatusEffect(effect, shooter)
+        entity.heal((potency * config.laser.damage).toFloat())
+      } else { // We don't need an else if canDamage, as we should only reach here if canDamage is true.
+        val damageType = world.registryManager.get(RegistryKeys.DAMAGE_TYPE).entryOf(ModDamageSources.LASER)
+        val source = DamageSource(damageType, this, shooter)
+        entity.setFireTicks(5)
+        entity.damage(source, (potency * config.laser.damage).toFloat())
+      }
+      potency = -1f
+    }
+  }
 
-      if (!blockState.isAir && blockState.block !is FluidBlock) {
-        val hardness = blockState.getHardness(world, position)
-        val player = getShooterPlayer() ?: return
+  override fun onBlockHit(hitResult: BlockHitResult) {
+    val position = BlockPos.ofFloored(hitResult.getPos())
+    val blockState = world.getBlockState(position)
+    val block = blockState.block
+    if (!blockState.isAir && blockState.block !is FluidBlock) {
+      val hardness = blockState.getHardness(world, position)
+      val player = getShooterPlayer() ?: return
 
-        // Ensure the player is set up correctly
-        syncPositions(true)
+      // Ensure the player is set up correctly
+      syncPositions(true)
 
-        if (!canBreakBlock(world, position, false, player)) {
-          potency = -1f
-          return
+      if (!canBreakBlock(world, position, false, player)) {
+        potency = -1f
+        return
+      }
+
+      if (block === Blocks.TNT) {
+        potency -= hardness
+
+        // Ignite TNT blocks
+        TntBlockInvoker.invokePrimeTnt(world, position, player)
+        val prevBlockState = world.getBlockState(position)
+        val prevBlockEntity = world.getBlockEntity(position)
+        val removeBlock = world.removeBlock(position, false)
+        val laserBreak: ActionType =
+          blockBreakAction(world, position, prevBlockState, player, prevBlockEntity, Sources.FIRE)
+        if (removeBlock) {
+          api.logAction(laserBreak)
         }
+      } else if (block === Blocks.OBSIDIAN) {
+        potency -= hardness
 
-        // TODO: Post a block break event here
-        if (block === Blocks.TNT) {
-          potency -= hardness
+        // Attempt to light obsidian blocks, creating a portal
+        val offset = position.offset(hitResult.side)
+        val offsetState = world.getBlockState(offset)
+        if (!offsetState.isAir) return
 
-          // Ignite TNT blocks
-          TntBlockInvoker.invokePrimeTnt(world, position, player)
-          val prevBlockState = world.getBlockState(position)
-          val prevBlockEntity = world.getBlockEntity(position)
-          val removeBlock = world.removeBlock(position, false)
-          val laserBreak: ActionType =
-            blockBreakAction(world, position, prevBlockState, player, prevBlockEntity, Sources.FIRE)
-          if (removeBlock) {
-            api.logAction(laserBreak)
-          }
-        } else if (block === Blocks.OBSIDIAN) {
-          potency -= hardness
+        // The obsidian block is checked above, but check the place we're putting the fire too
+        if (CommonProtection.canPlaceBlock(world, offset, shooterOwner,player)) {
+          world.playSound(null, offset, ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0f,
+            rand.nextFloat() * 0.4f + 0.8f)
+          world.setBlockState(offset, Blocks.FIRE.defaultState)
+        }
+      } else if (hardness > -1 && hardness <= potency) {
+        potency -= hardness
 
-          // Attempt to light obsidian blocks, creating a portal
-          val offset = position.offset(hitResult.side)
-          val offsetState = world.getBlockState(offset)
-          if (!offsetState.isAir) return
+        // Mimic the behavior of ServerPlayerInteractionManager.tryBreakBlock.
+        // Permission check first: (isSpawnProtected, or ClaimKit)
+        if (canBreakBlock(world, position, false, player) && block !is OperatorBlock) {
+          // Get the block entity before breaking the block, as we need it in dropStacks before it's removed from the
+          // world.
+          val blockEntity = world.getBlockEntity(position)
 
-          // The obsidian block is checked above, but check the place we're putting the fire too
-          if (canBreakBlock(world, offset, false, player)) {
-            world.playSound(null, offset, ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0f,
-              rand.nextFloat() * 0.4f + 0.8f)
-            world.setBlockState(offset, Blocks.FIRE.defaultState)
-          }
-        } else if (hardness > -1 && hardness <= potency) {
-          potency -= hardness
+          // Don't do the drops in tryBreakBlock, as onBreak might try to do them itself. For the other cases, call
+          // dropStacks after.
+          block.onBreak(world, position, blockState, player)
 
-          // Mimic the behavior of ServerPlayerInteractionManager.tryBreakBlock.
-          // Permission check first: (isSpawnProtected, or ClaimKit)
-          if (canBreakBlock(world, position, false, player) && block !is OperatorBlock) {
-            // Get the block entity before breaking the block, as we need it in dropStacks before it's removed from the
-            // world.
-            val blockEntity = world.getBlockEntity(position)
+          val broken = tryBreakBlock(world, position, false, player)
+          if (broken) {
+            block.onBroken(world, position, blockState)
 
-            // Don't do the drops in tryBreakBlock, as onBreak might try to do them itself. For the other cases, call
-            // dropStacks after.
-            block.onBreak(world, position, blockState, player)
-
-            val broken = tryBreakBlock(world, position, false, player)
-            if (broken) {
-              block.onBroken(world, position, blockState)
-
-              // ServerPlayerInteractionManager only calls dropStacks if the user is not in creative mode. This results
-              // in interesting behavior, such as shulker boxes calling dropStacks in onBreak for creative mode, and in
-              // getDroppedStacks for survival mode. Since that behavior checks `player`, we need to do it here too.
-              // Note that this results in most normal blocks not dropping if a creative player fires a laser. Blocks
-              // with special behavior in onBreak (shulkers, computers, chest contents) will still drop.
-              if (!player.isCreative && !Registries.BLOCK.getEntry(block).isIn(LASER_DONT_DROP)) {
-                // ServerPlayerInteractionManager calls dropStacks via afterBreak, but we don't want to increment
-                // exhaustion, so call dropStacks directly instead.
-                Block.dropStacks(blockState, world, position, blockEntity, player, ItemStack.EMPTY)
-              }
+            // ServerPlayerInteractionManager only calls dropStacks if the user is not in creative mode. This results
+            // in interesting behavior, such as shulker boxes calling dropStacks in onBreak for creative mode, and in
+            // getDroppedStacks for survival mode. Since that behavior checks `player`, we need to do it here too.
+            // Note that this results in most normal blocks not dropping if a creative player fires a laser. Blocks
+            // with special behavior in onBreak (shulkers, computers, chest contents) will still drop.
+            if (!player.isCreative && !Registries.BLOCK.getEntry(block).isIn(LASER_DONT_DROP)) {
+              // ServerPlayerInteractionManager calls dropStacks via afterBreak, but we don't want to increment
+              // exhaustion, so call dropStacks directly instead.
+              Block.dropStacks(blockState, world, position, blockEntity, player, ItemStack.EMPTY)
             }
           }
-        } else {
-          potency = -1f
         }
-      }
-    } else if (hitResult.type == HitResult.Type.ENTITY) {
-      if (hitResult !is EntityHitResult) return
-
-      val entity: Entity = hitResult.entity
-      if (entity is LivingEntity && canDamageEntity(entity)) {
-        // Ensure the player is set up correctly
-        syncPositions(true)
-
-        val shooter = getShooter()
-
-        if (entity.type.isIn(PlethoraEntityTags.LASERS_PROVIDE_ENERGY)) {
-          // When shooting blazes, apply a strength effect and heal them instead.
-          val effect = StatusEffectInstance(StatusEffects.STRENGTH, (20 * potency).toInt())
-          entity.addStatusEffect(effect, shooter)
-          entity.heal((potency * config.laser.damage).toFloat())
-        } else {
-          val damageType = world.registryManager.get(RegistryKeys.DAMAGE_TYPE).entryOf(ModDamageSources.LASER)
-          val source = DamageSource(damageType, this, shooter)
-          entity.setFireTicks(5)
-          entity.damage(source, (potency * config.laser.damage).toFloat())
-        }
-
+      } else {
         potency = -1f
       }
     }
   }
 
-  private fun getShooter(): Entity? {
-    if (shooter != null) return shooter
+  override fun getOwner(): Entity? {
+    val owner = super.getOwner()
+    if (owner != null) {
+      return owner
+    }
 
     val world = world as? ServerWorld ?: return null
     return PlethoraFakePlayer(world, null, shooterOwner)
-      .also { shooterPlayer = it; shooter = it }
+      .also { shooterPlayer = it; setOwner(it) }
   }
 
   private fun getShooterPlayer(): PlayerEntity? {
     if (shooterPlayer != null) return shooterPlayer
 
-    val shooter = getShooter()
+    val shooter = getOwner()
     if (shooter is PlayerEntity) return shooter.also { shooterPlayer = it }
 
     val world = world as? ServerWorld ?: return null
@@ -387,7 +366,7 @@ class LaserEntity : Entity, IPlayerOwnable {
 
   private fun syncPositions(force: Boolean) {
     val fakePlayer = shooterPlayer as? PlethoraFakePlayer ?: return
-    val shooter = shooter
+    val shooter = this.owner
 
     if (shooter != null && shooter !== fakePlayer) {
       syncFromEntity(fakePlayer, shooter)
@@ -438,14 +417,28 @@ class LaserEntity : Entity, IPlayerOwnable {
       } catch (_: NoClassDefFoundError) {
       }
       return breakBlock
+    } else {
+      // If this doesn't trigger for a while, remove the permission check above and rely on the one at canBreakBlock instead.
+      println("LaserEntity tried to break block at $pos without permission! This should not be possible at this point! " +
+        "Player: ${player.gameProfile.name}, World: ${world.registryKey.value}, " +
+        "Block: ${Registries.BLOCK.getId(world.getBlockState(pos).block)}")
     }
     return false
   }
-
+  private fun canInteractEntity(entity: Entity): Boolean {
+    // Injection point for ClaimKit
+    val player = this.getShooterPlayer() ?: return true
+    return CommonProtection.canInteractEntity(player.world, entity, player.gameProfile, player)
+  }
   private fun canDamageEntity(entity: Entity): Boolean {
     // Injection point for ClaimKit
     val player = this.getShooterPlayer() ?: return true
     return CommonProtection.canDamageEntity(player.world, entity, player.gameProfile, player)
+  }
+
+  fun discardLaser() {
+    trackedLasers.remove(this)
+    discard()
   }
 
   companion object {
