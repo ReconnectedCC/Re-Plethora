@@ -13,7 +13,6 @@ class PrintoutItemMeta : ItemStackMetaProvider<PrintoutItem>(PrintoutItem::class
     }
 
     return mapOf(
-      "type"  to item.type.toString(),
       "title" to PrintoutItem.getTitle(stack),
       "pages" to PrintoutItem.getPageCount(stack),
       "lines" to lines
