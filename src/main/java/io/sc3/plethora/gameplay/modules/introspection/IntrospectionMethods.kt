@@ -28,7 +28,7 @@ object IntrospectionMethods {
   }
 
   val GET_META_OWNER = SubtargetedModuleMethod.of(
-    "getMetaOwner", setOf(INTROSPECTION_M, SENSOR_M), EntityIdentifier::class.java,
+    "getMetaOwner", INTROSPECTION_M, EntityIdentifier::class.java,
     "function():table -- Get this entity's metadata."
   ) { unbaked, _ -> getMetaOwner(unbaked) }
   private fun getMetaOwner(unbaked: IUnbakedContext<IModuleContainer>): FutureMethodResult {
