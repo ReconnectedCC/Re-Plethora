@@ -43,6 +43,7 @@ val scLibraryVersion: String by project
 // ===========================
 val scPeripheralsVersion: String by project
 val scGoodiesVersion: String by project
+val figuraVersion: String by project
 val common_protection_version: String by project
 val ledger_version: String by project
 
@@ -117,6 +118,9 @@ repositories {
       includeGroup("xyz.nucleoid")
     }
   }
+  maven {
+    url = uri("https://maven.figuramc.org/releases")
+  }
 }
 
 dependencies {
@@ -164,6 +168,10 @@ dependencies {
   modCompileOnly("io.sc3:sc-peripherals:${scPeripheralsVersion}")
   // sc-goodies
   modCompileOnly("io.sc3:sc-goodies:${scGoodiesVersion}")
+  // Figura
+  modCompileOnly("org.figuramc:figura-fabric:${figuraVersion}") {
+    exclude("net.fabricmc.fabric-api")
+  }
   // Common Protection API
   modImplementation(include("eu.pb4","common-protection-api",common_protection_version))
   // Ledger

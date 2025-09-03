@@ -119,3 +119,5 @@ run/
 
 # Old source for backup
 srcOld
+
+.kotlin/sessions

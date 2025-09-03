@@ -3,6 +3,7 @@ package io.sc3.plethora.gameplay.modules.keyboard
 import dan200.computercraft.shared.computer.blocks.AbstractComputerBlockEntity
 import dan200.computercraft.shared.network.container.ComputerContainerData
 import dan200.computercraft.shared.platform.PlatformHelper
+import eu.pb4.common.protection.api.CommonProtection
 import io.sc3.library.ext.event
 import io.sc3.plethora.api.method.IAttachable
 import io.sc3.plethora.api.method.IContextBuilder
@@ -102,7 +103,9 @@ class KeyboardModuleItem(settings: Settings) : ModuleItem("keyboard", settings) 
       // canPlayerModifyAt: check the player can modify the world (spawn protection and ClaimKit should work here)
       // isUsable: check the player is alive and is within range. Command computers also check that the player has
       //           permission to use the computer.
-      return world.canPlayerModifyAt(player, pos) && isComputerUsableWithRange(player, blockEntity, REACH_RANGE)
+      return world.canPlayerModifyAt(player, pos)
+        && CommonProtection.canInteractBlock(world,pos,player.gameProfile,player)
+        && isComputerUsableWithRange(player, blockEntity, REACH_RANGE)
         && CAN_USE_KEYBOARD.invoker().invoke(world, player, pos, blockEntity)
     }
 
