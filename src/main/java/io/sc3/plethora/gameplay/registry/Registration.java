@@ -112,6 +112,8 @@ public final class Registration {
       ModScreens.NEURAL_INTERFACE_HANDLER_TYPE);
     Registry.register(Registries.SCREEN_HANDLER, new Identifier(Plethora.MOD_ID, "keyboard"),
       ModScreens.KEYBOARD_HANDLER_TYPE);
+    Registry.register(SCREEN_HANDLER, new Identifier(MOD_ID,"locked_keyboard"),
+      ModScreens.LOCKED_KEYBOARD_HANDLER_TYPE);
 
     PlethoraEvents.REGISTER.register(api -> {
       // Vanilla registration
@@ -244,6 +246,9 @@ public final class Registration {
     public static final ExtendedScreenHandlerType<ComputerMenuWithoutInventory> KEYBOARD_HANDLER_TYPE =
       new ExtendedScreenHandlerType<>((id, inv, data) ->
         new ComputerMenuWithoutInventory(ModScreens.KEYBOARD_HANDLER_TYPE, id, inv, new ComputerContainerData(data)));
+    public static final ExtendedScreenHandlerType<ComputerMenuWithoutInventory> LOCKED_KEYBOARD_HANDLER_TYPE =
+      new ExtendedScreenHandlerType<>((id,inv,data) ->
+        new ComputerMenuWithoutInventory(ModScreens.LOCKED_KEYBOARD_HANDLER_TYPE,id,inv,new ComputerContainerData(data)));
   }
 
   public static final class ModTurtleUpgradeSerialisers {

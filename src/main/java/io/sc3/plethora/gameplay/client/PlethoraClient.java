@@ -16,6 +16,7 @@ import io.sc3.plethora.gameplay.modules.glasses.networking.CanvasUpdatePacket;
 import io.sc3.plethora.gameplay.modules.keyboard.ClientKeyListener;
 import io.sc3.plethora.gameplay.modules.keyboard.KeyboardComputerScreen;
 import io.sc3.plethora.gameplay.modules.keyboard.KeyboardListenPacket;
+import io.sc3.plethora.gameplay.modules.keyboard.LockedKeyboardComputerScreen;
 import io.sc3.plethora.gameplay.neural.NeuralInterfaceScreenHandler;
 import io.sc3.plethora.gameplay.registry.Registration;
 import io.sc3.plethora.gameplay.registry.Registration.ModBlockEntities;
@@ -50,6 +51,7 @@ public class PlethoraClient implements ClientModInitializer {
         //noinspection RedundantTypeArguments
         HandledScreens.<NeuralInterfaceScreenHandler, NeuralInterfaceScreen>register(ModScreens.NEURAL_INTERFACE_HANDLER_TYPE, NeuralInterfaceScreen::new);
         HandledScreens.<AbstractComputerMenu, KeyboardComputerScreen<AbstractComputerMenu>>register(ModScreens.KEYBOARD_HANDLER_TYPE, KeyboardComputerScreen::new);
+        HandledScreens.<AbstractComputerMenu, LockedKeyboardComputerScreen<AbstractComputerMenu>>register(ModScreens.LOCKED_KEYBOARD_HANDLER_TYPE, LockedKeyboardComputerScreen::new);
 
         // Custom packets
         registerClientReceiver(CanvasAddPacket.id, CanvasAddPacket::fromBytes);
