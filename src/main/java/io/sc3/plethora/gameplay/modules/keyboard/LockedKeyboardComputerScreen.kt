@@ -6,13 +6,11 @@ import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu
 import dan200.computercraft.shared.network.server.MouseEventServerMessage
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.MultilineText
-import net.minecraft.client.gui.AbstractParentElement
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
 import net.minecraft.text.Text.translatable
+import kotlin.math.abs
 
 class LockedKeyboardComputerScreen<T : AbstractComputerMenu>(
   private val screen: T,
@@ -50,8 +48,14 @@ class LockedKeyboardComputerScreen<T : AbstractComputerMenu>(
     return super.mouseClicked(mouseX, mouseY, button)
   }
 
-  override fun mouseScrolled(pMouseX: Double, pMouseY: Double, pDelta: Double): Boolean {
-    // Replace this with vanilla implementation since I don't want the hotbar changing when people scroll.
-    return (Screen::mouseScrolled)(this,pMouseX,pMouseY,pDelta)
+  override fun mouseScrolled(mouseX: Double, mouseY: Double, pDelta: Double): Boolean {
+    // Send mouse scroll events to the computer
+    val scaleFactorX = 512.0/this.width
+    val scaleFactorY = 288.0/this.height
+    val newX = (mouseX * scaleFactorX).toInt()
+    val newY = (mouseY * scaleFactorY).toInt()
+    val direction = (pDelta/ abs(pDelta)).toInt() // either -1 or 1, 0 shouldn't be possible?
+    ClientNetworking.sendToServer(MouseEventServerMessage(screen, MouseEventServerMessage.Action.SCROLL,direction,newX,newY))
+    return false
   }
 }
