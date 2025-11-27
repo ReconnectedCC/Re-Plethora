@@ -10,6 +10,7 @@ class PlethoraConfig {
   @JvmField var scanner = Scanner()
   @JvmField var sensor = Sensor()
   @JvmField var neuralInterface = NeuralInterface()
+  @JvmField var keyboard = Keyboard()
 
   @Comment("Some methods have a particular cost: they consume a set amount of energy from their owner. This level " +
     "regenerates over time.\n\nNote: These values only apply to the default handler. Other mods may add custom " +
@@ -171,5 +172,11 @@ class PlethoraConfig {
     var awaitRegen = true
 
     var baseCosts = mutableMapOf<String, Int>()
+  }
+  @ConfigSerializable
+  class Keyboard {
+    @JvmField
+    @Comment("Disable the Keyboard GUI in case of a loop calling captureInput()\nThis also shuts down the offending computer so that it can't keep you softlocked.")
+    var sosMode = false
   }
 }

@@ -3,7 +3,9 @@ package io.sc3.plethora.gameplay.modules.keyboard
 import dan200.computercraft.client.gui.NoTermComputerScreen
 import dan200.computercraft.client.network.ClientNetworking
 import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu
+import dan200.computercraft.shared.network.server.ComputerActionServerMessage
 import dan200.computercraft.shared.network.server.MouseEventServerMessage
+import io.sc3.plethora.Plethora
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.MultilineText
 import net.minecraft.client.gui.DrawContext
@@ -20,9 +22,16 @@ class LockedKeyboardComputerScreen<T : AbstractComputerMenu>(
   private val tr by lazy { MinecraftClient.getInstance().textRenderer }
 
   private var lines: MultilineText = MultilineText.EMPTY
-
   override fun init() {
+    val sosMode = Plethora.config.keyboard.sosMode
+    if (sosMode) {
+      client!!.setScreen(null)
+      // Shut down the computer so it can't softlock the player.
+      ClientNetworking.sendToServer(ComputerActionServerMessage(screen,ComputerActionServerMessage.Action.SHUTDOWN))
+      return
+    }
     super.init()
+
    client!!.mouse.unlockCursor() // Get back cursor control
     lines = MultilineText.create(tr, translatable("item.plethora.module.module_keyboard.close"), (width * 0.8).toInt())
   }
