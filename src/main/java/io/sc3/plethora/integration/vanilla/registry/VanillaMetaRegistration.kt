@@ -41,6 +41,7 @@ object VanillaMetaRegistration {
       provider("potionItem", PotionItemMeta)
       provider("writableBookItem", WritableBookItemMeta)
       provider("writtenBookItem", WrittenBookItemMeta)
+      provider("containerItem", ContainerItemMeta )
     }
   }
 
