@@ -116,7 +116,7 @@ public class ScannerMethods {
 
   public static final SubtargetedModuleMethod<IWorldLocation> RAYCAST = SubtargetedModuleMethod.of(
     "raycast", SCANNER_M, IWorldLocation.class,
-    "function(yaw:number, pitch:number):table|nil -- Raycast in a direction and return the first block hit",
+    "function(yaw:number, pitch:number, hitFluids?:boolean):table|nil -- Raycast in a direction and return the first block hit",
     ScannerMethods::raycast
   );
   private static FutureMethodResult raycast(
