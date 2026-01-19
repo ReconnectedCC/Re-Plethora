@@ -15,18 +15,12 @@ import io.sc3.plethora.integration.vanilla.meta.block.BlockStateMeta;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static io.sc3.plethora.api.method.ArgumentExt.assertIntBetween;
 import static io.sc3.plethora.api.method.ContextKeys.ORIGIN;
@@ -112,11 +106,88 @@ public class ScannerMethods {
 
     return t;
   }
+  private static List<BlockPos> raycastAllBlocks(
+    World world,
+    Vec3d origin,
+    BlockPos originPos,
+    Vec3d direction,
+    double maxDistance
+  ) {
+    List<BlockPos> hits = new ArrayList<>();
+
+    Vec3d dir = direction.normalize();
+
+    int x = originPos.getX();
+    int y = originPos.getY();
+    int z = originPos.getZ();
+
+    int stepX = dir.x > 0 ? 1 : dir.x < 0 ? -1 : 0;
+    int stepY = dir.y > 0 ? 1 : dir.y < 0 ? -1 : 0;
+    int stepZ = dir.z > 0 ? 1 : dir.z < 0 ? -1 : 0;
+
+    double tDeltaX = stepX == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / dir.x);
+    double tDeltaY = stepY == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / dir.y);
+    double tDeltaZ = stepZ == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / dir.z);
+
+    double xDist = stepX > 0
+      ? (x + 1 - origin.x)
+      : (origin.x - x);
+    double yDist = stepY > 0
+      ? (y + 1 - origin.y)
+      : (origin.y - y);
+    double zDist = stepZ > 0
+      ? (z + 1 - origin.z)
+      : (origin.z - z);
+
+    double tMaxX = stepX == 0 ? Double.POSITIVE_INFINITY : xDist / Math.abs(dir.x);
+    double tMaxY = stepY == 0 ? Double.POSITIVE_INFINITY : yDist / Math.abs(dir.y);
+    double tMaxZ = stepZ == 0 ? Double.POSITIVE_INFINITY : zDist / Math.abs(dir.z);
+
+    double t = 0.0;
+
+    while (t <= maxDistance) {
+      BlockPos pos = new BlockPos(x, y, z);
+
+      if (!pos.equals(originPos)) {
+        BlockState state = world.getBlockState(pos);
+        if (!state.isAir()) {
+          hits.add(pos);
+        }
+      }
+
+      if (tMaxX < tMaxY) {
+        if (tMaxX < tMaxZ) {
+          x += stepX;
+          t = tMaxX;
+          tMaxX += tDeltaX;
+        } else {
+          z += stepZ;
+          t = tMaxZ;
+          tMaxZ += tDeltaZ;
+        }
+      } else {
+        if (tMaxY < tMaxZ) {
+          y += stepY;
+          t = tMaxY;
+          tMaxY += tDeltaY;
+        } else {
+          z += stepZ;
+          t = tMaxZ;
+          tMaxZ += tDeltaZ;
+        }
+      }
+    }
+
+    return hits;
+  }
+
+
+
 
 
   public static final SubtargetedModuleMethod<IWorldLocation> RAYCAST = SubtargetedModuleMethod.of(
     "raycast", SCANNER_M, IWorldLocation.class,
-    "function(yaw:number, pitch:number, hitFluids?:boolean):table|nil -- Raycast in a direction and return the first block hit",
+    "function(yaw:number, pitch:number):table|nil -- Raycast in a direction and return all blocks in its path",
     ScannerMethods::raycast
   );
   private static FutureMethodResult raycast(
@@ -132,10 +203,15 @@ public class ScannerMethods {
 
     double yaw = args.getDouble(0);
     double pitch = args.getDouble(1);
-    boolean hitFluids = false;
-    if (args.count() >= 3) {
-      hitFluids = args.getBoolean(2);
+    Double userDistance = null;
+    if (args.count() >= 3 ) {
+      userDistance = args.getDouble(2);
+      if (userDistance < 0) {
+        throw new LuaException("Distance must be non-negative");
+      }
     }
+
+
 
 
     if (yaw < -180 || yaw > 180 ) {
@@ -160,46 +236,52 @@ public class ScannerMethods {
       Math.cos(yawRad) * Math.cos(pitchRad)
     ).normalize();
     double rayLength = rayLengthForCube(direction, range);
-    Vec3d origin = Vec3d.ofCenter(originPos)
-      .add(direction.multiply(0.501));
+    if (userDistance != null) {
+      if (userDistance > rayLength) {
+        throw new LuaException("Distance exceeds scanner range");
+      }
+      rayLength = userDistance;
+    }
+    Vec3d origin = Vec3d.ofCenter(originPos);
 
-    Vec3d end = origin.add(direction.multiply(rayLength));
 
-    RaycastContext.FluidHandling fluidHandling =
-      hitFluids ? RaycastContext.FluidHandling.ANY
-        : RaycastContext.FluidHandling.NONE;
 
-    BlockHitResult hit = world.raycast(new RaycastContext(
+
+
+
+    List<BlockPos> hits = raycastAllBlocks(
+      world,
       origin,
-      end,
-      RaycastContext.ShapeType.OUTLINE,
-      fluidHandling,
-      (net.minecraft.entity.Entity) null
-    ));
+      originPos,
+      direction,
+      rayLength
+    );
 
-
-    if (hit.getType() != HitResult.Type.BLOCK) {
+    if (hits.isEmpty()) {
       return FutureMethodResult.result((Object) null);
     }
 
-    BlockPos hitPos = hit.getBlockPos();
-    BlockState state = world.getBlockState(hitPos);
+    List<Map<String, Object>> result = new ArrayList<>();
+    for (BlockPos hitPos : hits) {
+      int dx = hitPos.getX() - originPos.getX();
+      int dy = hitPos.getY() - originPos.getY();
+      int dz = hitPos.getZ() - originPos.getZ();
 
-    Map<String, Object> result = new HashMap<>(8);
-    int dx = hitPos.getX() - originPos.getX();
-    int dy = hitPos.getY() - originPos.getY();
-    int dz = hitPos.getZ() - originPos.getZ();
-    if (Math.abs(dx) > range || Math.abs(dy) > range || Math.abs(dz) > range) {
-      return FutureMethodResult.result((Object) null);
+      if (Math.abs(dx) > range || Math.abs(dy) > range || Math.abs(dz) > range) {
+        continue;
+      }
+
+      BlockState state = world.getBlockState(hitPos);
+      Identifier name = Registries.BLOCK.getId(state.getBlock());
+
+      Map<String, Object> entry = new HashMap<>(6);
+      entry.put("x", dx);
+      entry.put("y", dy);
+      entry.put("z", dz);
+      entry.put("name", name.toString());
+
+      result.add(entry);
     }
-
-    result.put("x", dx);
-    result.put("y", dy);
-    result.put("z", dz);
-
-    Identifier name = Registries.BLOCK.getId(state.getBlock());
-    result.put("name", name.toString());
-
 
     return FutureMethodResult.result(result);
   }
