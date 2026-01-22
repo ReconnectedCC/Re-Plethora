@@ -45,6 +45,7 @@ internal object PlethoraMethodRegistration {
       moduleMethod("sensor:getMetaByName", SensorMethods.GET_META_BY_NAME)
       moduleMethod("scanner:sense", ScannerMethods.SCAN)
       moduleMethod("scanner:getBlockMeta", ScannerMethods.GET_BLOCK_META)
+      moduleMethod("scanner:raycast", ScannerMethods.RAYCAST)
       moduleMethod("keyboard:isKeyboard", KeyboardMethods.EXAMPLE) //FIXME: Remove when methodwrapper equals is fixed
 
       // Overlay glasses
