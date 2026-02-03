@@ -106,7 +106,7 @@ public class ScannerMethods {
 
     return t;
   }
-  private static List<BlockPos> raycastAllBlocks(
+  private static List<BlockPos> raycastBlocksWithinDistance(
     World world,
     Vec3d origin,
     BlockPos originPos,
@@ -187,7 +187,7 @@ public class ScannerMethods {
 
   public static final SubtargetedModuleMethod<IWorldLocation> RAYCAST = SubtargetedModuleMethod.of(
     "raycast", SCANNER_M, IWorldLocation.class,
-    "function(yaw:number, pitch:number):table|nil -- Raycast in a direction and return all blocks in its path",
+    "function(yaw:number, pitch:number, distance:number):table|nil -- Raycast in a direction and return all blocks in its path",
     ScannerMethods::raycast
   );
   private static FutureMethodResult raycast(
@@ -203,13 +203,11 @@ public class ScannerMethods {
 
     double yaw = args.getDouble(0);
     double pitch = args.getDouble(1);
-    Double userDistance = null;
-    if (args.count() >= 3 ) {
-      userDistance = args.getDouble(2);
-      if (userDistance < 0) {
-        throw new LuaException("Distance must be non-negative");
-      }
+    Optional<Double> userDistance = args.optDouble(2);
+    if (userDistance.orElse(Double.POSITIVE_INFINITY) < 0) {
+      throw new LuaException("Distance must be non-negative");
     }
+
 
 
 
@@ -235,12 +233,10 @@ public class ScannerMethods {
       -Math.sin(pitchRad),
       Math.cos(yawRad) * Math.cos(pitchRad)
     ).normalize();
-    double rayLength = rayLengthForCube(direction, range);
-    if (userDistance != null) {
-      if (userDistance > rayLength) {
+    double maxRayLength = rayLengthForCube(direction, range);
+    double rayLength = userDistance.orElse(maxRayLength);
+    if (rayLength > maxRayLength) {
         throw new LuaException("Distance exceeds scanner range");
-      }
-      rayLength = userDistance;
     }
     Vec3d origin = Vec3d.ofCenter(originPos);
 
@@ -249,7 +245,7 @@ public class ScannerMethods {
 
 
 
-    List<BlockPos> hits = raycastAllBlocks(
+    List<BlockPos> hits = raycastBlocksWithinDistance(
       world,
       origin,
       originPos,
@@ -279,6 +275,9 @@ public class ScannerMethods {
       entry.put("y", dy);
       entry.put("z", dz);
       entry.put("name", name.toString());
+
+      BlockStateMeta.fillBasicMeta(entry, state);
+
 
       result.add(entry);
     }
