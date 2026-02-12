@@ -14,6 +14,7 @@ import net.minecraft.block.RedstoneOreBlock
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text.of
 import net.minecraft.text.Text.translatable
+import net.minecraft.util.Formatting
 import java.awt.Color
 
 object ModMenuIntegration : ModMenuApi {
@@ -51,6 +52,14 @@ object ModMenuIntegration : ModMenuApi {
           .build()
       })
       scanner.addEntry(oreColours.build())
+      val keyboard = builder.getOrCreateCategory(translatable("$key.keyboard.title"))
+      keyboard.addEntry(builder.entryBuilder()
+        .startBooleanToggle(translatable("$key.keyboard.sos_mode").formatted(Formatting.BOLD),cfg.keyboard.sosMode)
+        .setDefaultValue(false)
+        .setSaveConsumer { cfg.keyboard.sosMode = it }
+        .setTooltip(translatable("$key.keyboard.sos_mode.tooltip").formatted(Formatting.BOLD).formatted(Formatting.RED))
+        .build()
+      )
 
       builder.build()
     }

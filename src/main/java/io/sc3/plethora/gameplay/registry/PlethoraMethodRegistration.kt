@@ -47,6 +47,7 @@ internal object PlethoraMethodRegistration {
       moduleMethod("scanner:getBlockMeta", ScannerMethods.GET_BLOCK_META)
       moduleMethod("scanner:raycast", ScannerMethods.RAYCAST)
       moduleMethod("keyboard:isKeyboard", KeyboardMethods.EXAMPLE) //FIXME: Remove when methodwrapper equals is fixed
+      moduleMethod("keyboard:captureInput", KeyboardMethods.CAPTURE_INPUT)
 
       // Overlay glasses
       moduleMethod("glasses:canvas", GlassesMethods.GET_CANVAS)

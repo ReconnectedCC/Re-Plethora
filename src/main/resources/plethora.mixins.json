@@ -16,7 +16,8 @@
     "SimpleInventoryAccessor",
     "TntBlockInvoker",
     "computercraft.AbstractComputerBlockEntityAccessor",
-    "computercraft.RedstoneRelayMixin"
+    "computercraft.RedstoneRelayMixin",
+    "computercraft.ComputerAccessAccessor"
   ],
   "client": [
     "client.GameRendererAccessor",

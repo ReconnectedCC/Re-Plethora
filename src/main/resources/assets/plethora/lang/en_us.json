@@ -64,5 +64,8 @@
 
   "gui.plethora.config.title": "Plethora",
   "gui.plethora.config.scanner.title": "Scanner",
-  "gui.plethora.config.scanner.ore_colours": "Ore Colors"
+  "gui.plethora.config.scanner.ore_colours": "Ore Colors",
+  "gui.plethora.config.keyboard.title": "Keyboard",
+  "gui.plethora.config.keyboard.sos_mode": "SOS Mode",
+  "gui.plethora.config.keyboard.sos_mode.tooltip": "Disable the Keyboard GUI in case of a loop calling captureInput()\nThis also shuts down the offending computer so that it can't keep you softlocked."
 }
