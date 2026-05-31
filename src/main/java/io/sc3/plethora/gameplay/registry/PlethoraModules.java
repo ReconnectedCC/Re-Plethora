@@ -26,15 +26,15 @@ public class PlethoraModules {
     // public static final String CHAT_S          = MOD_ID + ":" + CHAT;
     // public static final String CHAT_CREATIVE_S = MOD_ID + ":" + CHAT_CREATIVE;
 
-    public static final Identifier INTROSPECTION_M = new Identifier(MOD_ID, INTROSPECTION);
-    public static final Identifier KINETIC_M       = new Identifier(MOD_ID, KINETIC);
-    public static final Identifier LASER_M         = new Identifier(MOD_ID, LASER);
-    public static final Identifier SCANNER_M       = new Identifier(MOD_ID, SCANNER);
-    public static final Identifier SENSOR_M        = new Identifier(MOD_ID, SENSOR);
-    public static final Identifier KEYBOARD_M      = new Identifier(MOD_ID, KEYBOARD);
-    public static final Identifier GLASSES_M       = new Identifier(MOD_ID, GLASSES);
-    // public static final Identifier CHAT_M          = new Identifier(MOD_ID, CHAT);
-    // public static final Identifier CHAT_CREATIVE_M = new Identifier(MOD_ID, CHAT_CREATIVE);
+    public static final Identifier INTROSPECTION_M = Identifier.of(MOD_ID, INTROSPECTION);
+    public static final Identifier KINETIC_M       = Identifier.of(MOD_ID, KINETIC);
+    public static final Identifier LASER_M         = Identifier.of(MOD_ID, LASER);
+    public static final Identifier SCANNER_M       = Identifier.of(MOD_ID, SCANNER);
+    public static final Identifier SENSOR_M        = Identifier.of(MOD_ID, SENSOR);
+    public static final Identifier KEYBOARD_M      = Identifier.of(MOD_ID, KEYBOARD);
+    public static final Identifier GLASSES_M       = Identifier.of(MOD_ID, GLASSES);
+    // public static final Identifier CHAT_M          = Identifier.of(MOD_ID, CHAT);
+    // public static final Identifier CHAT_CREATIVE_M = Identifier.of(MOD_ID, CHAT_CREATIVE);
 
     private static final String[] NAMES = new String[]{
         INTROSPECTION, LASER, SCANNER, SENSOR, KINETIC, KEYBOARD, GLASSES/*, CHAT, CHAT_CREATIVE*/

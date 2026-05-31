@@ -3,11 +3,12 @@ package io.sc3.plethora.gameplay.modules
 import io.sc3.plethora.api.method.IContextBuilder
 import io.sc3.plethora.api.module.IModuleAccess
 import net.minecraft.nbt.NbtElement
-import net.minecraft.client.item.TooltipContext
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Item.TooltipContext
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.text.Text.translatable
-import net.minecraft.world.World
 import kotlin.math.ceil
 import kotlin.math.pow
 
@@ -16,8 +17,8 @@ abstract class LevelableModuleItem(itemName: String, settings: Settings) : Modul
   abstract val maxRange: Int
   abstract val levelCost: Int
 
-  override fun appendTooltip(stack: ItemStack, world: World?, tooltip: MutableList<Text>, context: TooltipContext) {
-    super.appendTooltip(stack, world, tooltip, context)
+  override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Text>, type: TooltipType) {
+    super.appendTooltip(stack, context, tooltip, type)
 
     val level = getLevel(stack)
     if (level < 0) return
@@ -42,7 +43,7 @@ abstract class LevelableModuleItem(itemName: String, settings: Settings) : Modul
     @JvmStatic
     fun getLevel(stack: ItemStack?): Int {
       if (stack == null || stack.isEmpty) return 0
-      val nbt = stack.nbt
+      val nbt = stack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt()
       return if (nbt != null && nbt.contains("level", NbtElement.NUMBER_TYPE.toInt())) {
         nbt.getInt("level")
       } else {

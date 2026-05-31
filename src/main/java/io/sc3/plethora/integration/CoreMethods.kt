@@ -29,7 +29,7 @@ object CoreMethods {
   private fun hasModule(unbaked: IUnbakedContext<IModuleContainer>, args: IArguments): FutureMethodResult {
     val container = unbaked.bake().target
     val module = args.getString(0)
-    return FutureMethodResult.result(container.hasModule(Identifier(module)))
+    return FutureMethodResult.result(container.hasModule(Identifier.of(module)))
   }
 
   val FILTER_MODULES = BasicMethod.of(
@@ -42,7 +42,7 @@ object CoreMethods {
     val newModules = mutableSetOf<Identifier>()
 
     for (i in 0 until args.count()) {
-      val module = Identifier(args.getString(i))
+      val module = Identifier.of(args.getString(i))
       if (oldModules.contains(module)) newModules.add(module)
     }
 

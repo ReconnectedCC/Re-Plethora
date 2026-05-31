@@ -1,7 +1,9 @@
 package io.sc3.plethora.gameplay.manipulator
 
+import com.mojang.serialization.MapCodec
 import io.sc3.plethora.gameplay.BaseBlockWithEntity
 import io.sc3.plethora.gameplay.manipulator.ManipulatorType.MARK_1
+import io.sc3.plethora.gameplay.manipulator.ManipulatorType.MARK_2
 import io.sc3.plethora.gameplay.registry.Registration.ModBlockEntities.MANIPULATOR_MARK_1
 import io.sc3.plethora.gameplay.registry.Registration.ModBlockEntities.MANIPULATOR_MARK_2
 import io.sc3.plethora.util.PlayerHelpers
@@ -27,6 +29,9 @@ class ManipulatorBlock(settings: Settings?, val type: ManipulatorType) : BaseBlo
     defaultState = stateManager.defaultState
       .with(FACING, Direction.DOWN)
   }
+
+  override fun getCodec(): MapCodec<out ManipulatorBlock> =
+    if (type == MARK_1) MARK_1_CODEC else MARK_2_CODEC
 
   override fun appendProperties(properties: StateManager.Builder<Block, BlockState>) {
     properties.add(FACING)
@@ -69,12 +74,15 @@ class ManipulatorBlock(settings: Settings?, val type: ManipulatorType) : BaseBlo
   ) : BlockEntityTicker<T>? {
     if (world.isClient) return null
     val be = if (this.type == MARK_1) MANIPULATOR_MARK_1 else MANIPULATOR_MARK_2
-    return checkType(type, be, ManipulatorBlockEntity::tick)
+    return validateTicker(type, be, ManipulatorBlockEntity::tick)
   }
 
   companion object {
     @JvmField
     val FACING: DirectionProperty = Properties.FACING
+
+    private val MARK_1_CODEC = createCodec { settings -> ManipulatorBlock(settings, MARK_1) }
+    private val MARK_2_CODEC = createCodec { settings -> ManipulatorBlock(settings, MARK_2) }
 
     const val OFFSET     = 10.0 / 16.0
     const val PIX        = 1 / 16.0

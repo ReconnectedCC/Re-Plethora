@@ -16,6 +16,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.Identifier
@@ -74,17 +75,21 @@ class ManipulatorBlockEntity(
     world.updateListeners(pos, state, state, Block.NOTIFY_ALL)
   }
 
-  override fun readNbt(nbt: NbtCompound) {
-    super.readNbt(nbt)
+  override fun readNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    super.readNbt(nbt, registryLookup)
     readDescription(nbt)
   }
 
-  override fun writeNbt(nbt: NbtCompound) {
-    super.writeNbt(nbt)
-    writeDescription(nbt)
+  override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
+    super.writeNbt(nbt, registryLookup)
+    writeDescription(nbt, registryLookup)
   }
 
   override fun writeDescription(nbt: NbtCompound) {
+    writeDescription(nbt, world?.registryManager ?: return)
+  }
+
+  private fun writeDescription(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
     super.writeDescription(nbt)
 
     // Manipulator type (Mark I, Mark II)
@@ -97,7 +102,7 @@ class ManipulatorBlockEntity(
     for (i in stacks.indices) {
       val stack = stacks[i]
       if (!stack.isEmpty) {
-        nbt.put("stack$i", stack.writeNbt(NbtCompound()))
+        nbt.put("stack$i", stack.encode(registryLookup))
       } else {
         nbt.remove("stack$i")
       }
@@ -111,6 +116,7 @@ class ManipulatorBlockEntity(
       for ((key, value) in moduleData) {
         data.put(key.toString(), value)
       }
+      nbt.put("data", data)
     }
   }
 
@@ -125,7 +131,7 @@ class ManipulatorBlockEntity(
     profile = PlayerHelpers.readProfile(nbt)
     for (i in stacks.indices) {
       stacks[i] = if (nbt.contains("stack$i")) {
-        ItemStack.fromNbt(nbt.getCompound("stack$i"))
+        ItemStack.fromNbt(world!!.registryManager, nbt.getCompound("stack$i")).orElse(ItemStack.EMPTY)
       } else {
         ItemStack.EMPTY
       }
@@ -135,7 +141,7 @@ class ManipulatorBlockEntity(
 
     val data = nbt.getCompound("data")
     for (key in data.keys) {
-      moduleData[Identifier(key)] = data.getCompound(key)
+      moduleData[Identifier.of(key)] = data.getCompound(key)
     }
   }
 

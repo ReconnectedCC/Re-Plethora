@@ -37,18 +37,16 @@ class LineLoop2d(
     RenderSystem.lineWidth(scale)
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES)
     val matrix = matrices.peek().positionMatrix
-    val normal = matrices.peek().normalMatrix
 
     RenderSystem.setShader(GameRenderer::getRenderTypeLinesProgram)
-    buffer.begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES)
 
     for (point in points) {
       buffer
         .vertex(matrix, point.x.toFloat(), point.y.toFloat(), 0f)
         .color(red, green, blue, alpha)
-        .normal(normal, 0f, 1f, 0f).next()
+        .normal(0f, 1f, 0f)
     }
 
     // No OpenGL LINE_LOOP anymore, so close the loop manually
@@ -56,7 +54,7 @@ class LineLoop2d(
     buffer
       .vertex(matrix, first.x.toFloat(), first.y.toFloat(), 0f)
       .color(red, green, blue, alpha)
-      .normal(normal, 0f, 1f, 0f).next()
+      .normal(0f, 1f, 0f)
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())
     RenderSystem.lineWidth(1f)

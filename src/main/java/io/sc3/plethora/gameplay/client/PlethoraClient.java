@@ -43,8 +43,8 @@ public class PlethoraClient implements ClientModInitializer {
         BlockEntityRendererRegistry.register(ModBlockEntities.MANIPULATOR_MARK_1, ctx -> new ManipulatorRenderer());
         BlockEntityRendererRegistry.register(ModBlockEntities.MANIPULATOR_MARK_2, ctx -> new ManipulatorRenderer());
         TrinketRendererRegistry.registerRenderer(Registration.ModItems.NEURAL_INTERFACE, new NeuralInterfaceTrinketRenderer());
-        FabricComputerCraftAPIClient.registerTurtleUpgradeModeller(Registration.ModTurtleUpgradeSerialisers.MODULE, TurtleUpgradeModuleRenderer.INSTANCE);
-        FabricComputerCraftAPIClient.registerTurtleUpgradeModeller(Registration.ModTurtleUpgradeSerialisers.KINETIC_AUGMENT, TurtleUpgradeModuleRenderer.INSTANCE::getModel);
+        FabricComputerCraftAPIClient.registerTurtleUpgradeModeller(Registration.ModTurtleUpgradeTypes.MODULE, TurtleUpgradeModuleRenderer.INSTANCE);
+        FabricComputerCraftAPIClient.registerTurtleUpgradeModeller(Registration.ModTurtleUpgradeTypes.KINETIC_AUGMENT, TurtleUpgradeModuleRenderer.INSTANCE::getModel);
 
         // These generics are required even if IDEA says they're not
         //noinspection RedundantTypeArguments
@@ -52,10 +52,10 @@ public class PlethoraClient implements ClientModInitializer {
         HandledScreens.<AbstractComputerMenu, KeyboardComputerScreen<AbstractComputerMenu>>register(ModScreens.KEYBOARD_HANDLER_TYPE, KeyboardComputerScreen::new);
 
         // Custom packets
-        registerClientReceiver(CanvasAddPacket.id, CanvasAddPacket::fromBytes);
-        registerClientReceiver(CanvasRemovePacket.id, CanvasRemovePacket::fromBytes);
-        registerClientReceiver(CanvasUpdatePacket.id, CanvasUpdatePacket::fromBytes);
-        registerClientReceiver(KeyboardListenPacket.id, KeyboardListenPacket::fromBytes);
+        registerClientReceiver(CanvasAddPacket.id);
+        registerClientReceiver(CanvasRemovePacket.id);
+        registerClientReceiver(CanvasUpdatePacket.id);
+        registerClientReceiver(KeyboardListenPacket.id);
 
         // CC:R's ComputerScreenBase makes Screen.init() and other methods final (?!), so we have to call our own init
         // function using this event instead

@@ -12,7 +12,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE
 import net.minecraft.client.render.OverlayTexture.DEFAULT_UV
-import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.model.json.ModelTransformationMode
 import net.minecraft.item.ItemStack
@@ -40,7 +39,7 @@ class Item3d(
     rotation = ByteBufUtils.readOptVec3d(buf)
     scale = buf.readFloat()
 
-    val name = Identifier(buf.readString())
+    val name = Identifier.of(buf.readString())
     item = Registries.ITEM[name]
 
     hasDepthTest = buf.readBoolean()
@@ -65,8 +64,7 @@ class Item3d(
     matrices.scale(scale, scale, scale)
     applyRotation(ctx, true)
 
-    val buffer = Tessellator.getInstance().buffer
-    val immediate = VertexConsumerProvider.immediate(buffer)
+    val immediate = consumers ?: ctx.vertexConsumers
 
     if (hasDepthTest) {
       RenderSystem.enableDepthTest()
@@ -77,8 +75,7 @@ class Item3d(
     val stack = stack ?: ItemStack(item).also { stack = it }
     itemRenderer.renderItem(stack, ModelTransformationMode.NONE, MAX_LIGHT_COORDINATE, DEFAULT_UV, matrices,
       immediate, mc.world, 0)
-
-    immediate.draw()
+    if (immediate is VertexConsumerProvider.Immediate) immediate.draw()
 
     matrices.pop()
   }

@@ -84,7 +84,7 @@ public final class WorldPosition {
 
     public static WorldPosition deserializeNbt(NbtCompound nbt) {
         return new WorldPosition(
-            RegistryKey.of(RegistryKeys.WORLD, new Identifier(nbt.getString("worldKey"))),
+            RegistryKey.of(RegistryKeys.WORLD, Identifier.of(nbt.getString("worldKey"))),
             new Vec3d(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"))
         );
     }

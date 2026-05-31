@@ -23,6 +23,7 @@ import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.block.FluidBlock
 import net.minecraft.block.OperatorBlock
+import net.minecraft.block.Portal
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
@@ -34,6 +35,8 @@ import net.minecraft.entity.projectile.ProjectileEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
+import net.minecraft.entity.data.DataTracker
+import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.world.ServerWorld
@@ -103,7 +106,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
     shooterOwner = profile
   }
 
-  override fun initDataTracker() {
+  override fun initDataTracker(builder: DataTracker.Builder) {
     // There's no data that needs tracking here
   }
 
@@ -219,7 +222,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
         if (collision != null && collision.type != HitResult.Type.MISS) {
           val blockPos = BlockPos.ofFloored(collision.pos)
           if (collision.type == HitResult.Type.BLOCK && world.getBlockState(blockPos).isOf(Blocks.NETHER_PORTAL)) {
-            setInNetherPortal(blockPos)
+            tryUsePortal(Blocks.NETHER_PORTAL as Portal, blockPos)
           } else {
             onCollision(collision)
           }
@@ -453,7 +456,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
       val fromWorld = from.entityWorld
 
       if (player.world != fromWorld && fromWorld is ServerWorld) {
-        player.moveToWorld(fromWorld)
+        player.teleport(fromWorld, fromPos.x, fromPos.y, fromPos.z, emptySet<PositionFlag>(), from.yaw, from.pitch)
       }
 
       player.updatePositionAndAngles(fromPos.x, fromPos.y, fromPos.z, from.yaw, from.pitch)
@@ -461,7 +464,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
 
     private fun syncFromPos(player: PlayerEntity, @Nonnull world: World, pos: Vec3d, yaw: Float, pitch: Float) {
       if (player.world != world && world is ServerWorld) {
-        player.moveToWorld(world)
+        player.teleport(world, pos.x, pos.y, pos.z, emptySet<PositionFlag>(), yaw, pitch)
       }
 
       player.updatePositionAndAngles(pos.x, pos.y, pos.z, yaw, pitch)

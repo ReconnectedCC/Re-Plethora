@@ -26,7 +26,7 @@ class ObjectRoot3d(
   parent: Int
 ) : BaseObject(id, parent, ORIGIN_3D), Group3d {
   private var origin: Vec3d = Vec3d.ZERO
-  private var worldKey = Identifier("minecraft", "overworld")
+  private var worldKey = Identifier.of("minecraft", "overworld")
 
   fun recenter(world: World, origin: Vec3d) {
     val worldKey = world.registryKey.value

@@ -1,21 +1,17 @@
 package io.sc3.plethora.gameplay.neural;
 
-import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.pocket.IPocketAccess;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.api.upgrades.UpgradeData;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Proxy IPocketAccess for neural interfaces.
@@ -81,20 +77,13 @@ public class NeuralPocketAccess implements IPocketAccess {
 
   @Nonnull
   @Override
-  public NbtCompound getUpgradeNBTData() {
-        return new NbtCompound(); // TODO: Necessary to do anything with this?
+  public ComponentChanges getUpgradeData() {
+        return ComponentChanges.EMPTY;
     }
 
   @Override
-  public void updateUpgradeNBTData() {}
+  public void setUpgradeData(ComponentChanges data) {}
 
   @Override
   public void invalidatePeripheral() {}
-
-  @Override
-  @SuppressWarnings({"removal"})
-  //TODO: Remove this when IPocketAccess is updated, there's nothing relying on it. Trust me bro.
-  public Map<Identifier, IPeripheral> getUpgrades() {
-      return Collections.emptyMap();
-    }
 }

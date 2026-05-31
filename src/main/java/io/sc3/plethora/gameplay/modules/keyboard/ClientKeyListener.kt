@@ -4,6 +4,7 @@ import io.sc3.plethora.Plethora
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.minecraft.client.MinecraftClient
 import org.lwjgl.glfw.GLFW.*
 
 object ClientKeyListener {
@@ -50,7 +51,7 @@ object ClientKeyListener {
 
       if (keyPresses.isNotEmpty() || chars.isNotEmpty() || releases.isNotEmpty()) {
         val packet = KeyboardKeyPacket(keyPresses, chars, releases)
-        ClientPlayNetworking.send(KeyboardKeyPacket.id, packet.toBytes())
+        if (MinecraftClient.getInstance().networkHandler != null) ClientPlayNetworking.send(packet)
 
         keyPressEvents.clear()
         charEvents.clear()

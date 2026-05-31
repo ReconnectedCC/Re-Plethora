@@ -66,7 +66,7 @@ object PlayerInteractionHelpers {
               (player.activeItem == active || player.activeItem.isEmpty)
             ) {
               // Then stop it!
-              active.onStoppedUsing(world, player, active.maxUseTime - duration)
+              active.onStoppedUsing(world, player, active.getMaxUseTime(player) - duration)
               player.clearActiveItem()
               return@delayed FutureMethodResult.result(true, "item")
             } else {
@@ -94,7 +94,7 @@ object PlayerInteractionHelpers {
     val bypass = (player.shouldCancelInteraction()
         && (!player.mainHandStack.isEmpty || !player.offHandStack.isEmpty))
     if (!bypass) {
-      val outResult = blockState.onUse(world, player, hand, hitResult)
+      val outResult = blockState.onUse(world, player, hitResult)
       if (outResult.isAccepted) return outResult
     }
 

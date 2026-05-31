@@ -5,7 +5,6 @@ import dan200.computercraft.shared.turtle.TurtleUtil
 import dan200.computercraft.shared.util.DirectionUtil
 import io.sc3.plethora.api.IPlayerOwnable
 import io.sc3.plethora.gameplay.PlethoraFakePlayer
-import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Hand
@@ -55,10 +54,6 @@ object TurtleFakePlayerProvider {
     playerInv.markDirty()
 
     // Add properties
-    val activeStack = player.getStackInHand(Hand.MAIN_HAND)
-    if (!activeStack.isEmpty) {
-      player.attributes.addTemporaryModifiers(activeStack.getAttributeModifiers(EquipmentSlot.MAINHAND))
-    }
   }
 
   @JvmStatic
@@ -67,10 +62,6 @@ object TurtleFakePlayerProvider {
     playerInv.selectedSlot = 0
 
     // Remove properties
-    val activeStack = player.getStackInHand(Hand.MAIN_HAND)
-    if (!activeStack.isEmpty) {
-      player.attributes.removeModifiers(activeStack.getAttributeModifiers(EquipmentSlot.MAINHAND))
-    }
 
     // Copy primary items into turtle playerInv and then insert/drop the rest
     val turtleInv = turtle.inventory

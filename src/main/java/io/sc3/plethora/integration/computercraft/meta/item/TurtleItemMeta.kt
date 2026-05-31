@@ -10,16 +10,10 @@ class TurtleItemMeta : ItemStackMetaProvider<TurtleItem>(TurtleItem::class.java,
   override fun getMeta(stack: ItemStack, item: TurtleItem): Map<String, *> {
     val out: MutableMap<String, Any?> = HashMap()
 
-    val colour = item.getColour(stack)
-    if (colour != -1) {
-      out["color"] = colour
-      out["colour"] = colour
-    }
+    out["fuel"] = TurtleItem.getFuelLevel(stack)
 
-    out["fuel"] = item.getFuelLevel(stack)
-
-    out["left"] = getUpgrade(item.getUpgrade(stack, TurtleSide.LEFT))
-    out["right"] = getUpgrade(item.getUpgrade(stack, TurtleSide.RIGHT))
+    out["left"] = getUpgrade(TurtleItem.getUpgrade(stack, TurtleSide.LEFT))
+    out["right"] = getUpgrade(TurtleItem.getUpgrade(stack, TurtleSide.RIGHT))
 
     return out
   }
@@ -28,8 +22,8 @@ class TurtleItemMeta : ItemStackMetaProvider<TurtleItem>(TurtleItem::class.java,
     fun getUpgrade(upgrade: ITurtleUpgrade?): Map<String, String>? {
       if (upgrade == null) return null
       return mapOf(
-        "id"        to upgrade.upgradeID.toString(),
-        "adjective" to upgrade.unlocalisedAdjective,
+        "id"        to upgrade.toString(),
+        "adjective" to upgrade.adjective.string,
         "type"      to upgrade.type.toString()
       )
     }

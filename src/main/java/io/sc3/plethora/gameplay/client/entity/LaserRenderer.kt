@@ -67,6 +67,5 @@ class LaserRenderer(ctx: EntityRendererFactory.Context?) : EntityRenderer<LaserE
       .overlay(OverlayTexture.DEFAULT_UV)
       .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
       .normal(0.0f, 0.0f, 1.0f)
-      .next()
   }
 }

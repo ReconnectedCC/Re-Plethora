@@ -19,7 +19,7 @@ class KineticModuleItem(settings: Settings) : ModuleItem("kinetic", settings) {
   override fun getModule(): Identifier = PlethoraModules.KINETIC_M
 
   override fun getUseAction(stack: ItemStack) = UseAction.BOW
-  override fun getMaxUseTime(stack: ItemStack) = MAX_TICKS
+  override fun getMaxUseTime(stack: ItemStack, user: LivingEntity) = MAX_TICKS
 
   override fun use(world: World, player: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
     val stack = player.getStackInHand(hand)

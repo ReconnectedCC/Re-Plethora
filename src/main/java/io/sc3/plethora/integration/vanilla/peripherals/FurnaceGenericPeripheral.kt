@@ -7,7 +7,7 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.util.Identifier
 
 object FurnaceGenericPeripheral : GenericPeripheral {
-  override fun id() = Identifier("furnace").toString()
+  override fun id() = Identifier.of("furnace").toString()
 
   @LuaFunction(mainThread = true)
   @JvmStatic

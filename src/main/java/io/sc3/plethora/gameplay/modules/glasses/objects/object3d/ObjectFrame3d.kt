@@ -98,18 +98,16 @@ class ObjectFrame3d(
       RenderSystem.disableDepthTest()
     }
 
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR)
     val matrix = matrices.peek().positionMatrix
 
     RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
     RenderSystem.setShaderTexture(0, framebuffer.colorAttachment)
     RenderSystem.enableBlend()
-
-    buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR)
-    buffer.vertex(matrix, 0.0f, h, 0.0f).texture(0.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f).next()
-    buffer.vertex(matrix, w, h, 0.0f).texture(1.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f).next()
-    buffer.vertex(matrix, w, 0.0f, 0.0f).texture(1.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f).next()
-    buffer.vertex(matrix, 0.0f, 0.0f, 0.0f).texture(0.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f).next()
+    buffer.vertex(matrix, 0.0f, h, 0.0f).texture(0.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, w, h, 0.0f).texture(1.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, w, 0.0f, 0.0f).texture(1.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, 0.0f, 0.0f, 0.0f).texture(0.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
     BufferRenderer.drawWithGlobalProgram(buffer.end())
 
     RenderSystem.setShaderFogEnd(currentFog)

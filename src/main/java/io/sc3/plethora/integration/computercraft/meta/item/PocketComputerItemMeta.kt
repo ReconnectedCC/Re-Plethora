@@ -9,12 +9,6 @@ class PocketComputerItemMeta : ItemStackMetaProvider<PocketComputerItem>(PocketC
   override fun getMeta(stack: ItemStack, item: PocketComputerItem): Map<String, *> {
     val out: MutableMap<String, Any?> = HashMap(2)
 
-    val colour = item.getColour(stack)
-    if (colour != -1) {
-      out["color"] = colour
-      out["colour"] = colour
-    }
-
     out["back"] = getUpgrade(PocketComputerItem.getUpgrade(stack))
 
     return out
@@ -24,8 +18,8 @@ class PocketComputerItemMeta : ItemStackMetaProvider<PocketComputerItem>(PocketC
     private fun getUpgrade(upgrade: IPocketUpgrade?): Map<String, String>? {
       if (upgrade == null) return null
       return mapOf(
-        "id"        to upgrade.upgradeID.toString(),
-        "adjective" to upgrade.unlocalisedAdjective
+        "id"        to upgrade.toString(),
+        "adjective" to upgrade.adjective.string
       )
     }
   }

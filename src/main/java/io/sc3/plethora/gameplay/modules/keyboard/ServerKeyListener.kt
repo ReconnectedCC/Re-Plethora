@@ -16,7 +16,7 @@ object ServerKeyListener {
 
       // Notify the client to start listening
       if (accesses.isEmpty()) {
-        ServerPlayNetworking.send(player, KeyboardListenPacket.id, KeyboardListenPacket(true).toBytes())
+        ServerPlayNetworking.send(player, KeyboardListenPacket(true))
       }
 
       accesses.add(access)
@@ -29,7 +29,7 @@ object ServerKeyListener {
 
       // Notify the client to stop listening
       if (accesses.remove(access) && accesses.isEmpty()) {
-        ServerPlayNetworking.send(player, KeyboardListenPacket.id, KeyboardListenPacket(false).toBytes())
+        ServerPlayNetworking.send(player, KeyboardListenPacket(false))
       }
     }
   }

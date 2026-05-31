@@ -15,8 +15,6 @@ object PlethoraDatagen : DataGeneratorEntrypoint {
     log.info("Plethora datagen initializing")
 
     val pack = generator.createPack()
-    pack.addProvider(::TurtleUpgradeProvider)
-    pack.addProvider(::PocketUpgradeProvider)
     pack.addProvider(::ModelProvider)
     pack.addProvider(::BlockLootTableProvider)
     pack.addProvider(::BlockTagProvider)
@@ -24,7 +22,7 @@ object PlethoraDatagen : DataGeneratorEntrypoint {
     pack.addProvider(::DamageTypeTagProvider)
     pack.addProvider(::DynamicRegistryProvider)
     pack.addProvider(::EntityTypeTagProvider)
-    pack.addProvider { out, _ -> RecipeGenerator(out) }
+    pack.addProvider(::RecipeGenerator)
   }
 
   override fun buildRegistry(registryBuilder: RegistryBuilder) {

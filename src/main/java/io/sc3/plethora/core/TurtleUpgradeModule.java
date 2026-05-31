@@ -4,9 +4,14 @@ import com.mojang.authlib.GameProfile;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.turtle.*;
+import dan200.computercraft.api.upgrades.UpgradeType;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Direction;
@@ -22,6 +27,7 @@ import io.sc3.plethora.api.reference.ConstantReference;
 import io.sc3.plethora.api.reference.IReference;
 import io.sc3.plethora.api.reference.Reference;
 import io.sc3.plethora.core.executor.TaskRunner;
+import io.sc3.plethora.gameplay.registry.Registration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,21 +53,21 @@ public class TurtleUpgradeModule implements ITurtleUpgrade {
     return handler;
   }
 
-  @Nonnull
+	@Nonnull
 	@Override
-	public Identifier getUpgradeID() {
-		return handler.getModule();
+	public UpgradeType<? extends ITurtleUpgrade> getType() {
+		return Registration.ModTurtleUpgradeTypes.MODULE;
 	}
 
 	@Nonnull
 	@Override
-	public String getUnlocalisedAdjective() {
-		return adjective;
+	public Text getAdjective() {
+		return Text.translatable(adjective);
 	}
 
 	@Nonnull
 	@Override
-	public TurtleUpgradeType getType() {
+	public TurtleUpgradeType getUpgradeType() {
 		return TurtleUpgradeType.PERIPHERAL;
 	}
 
@@ -140,12 +146,15 @@ public class TurtleUpgradeModule implements ITurtleUpgrade {
 		private final TurtleSide side;
 		private final IWorldLocation location;
 		private final IModuleContainer container;
+		private final NbtCompound data;
 
 		private TurtleModuleAccess(ITurtleAccess access, TurtleSide side, IModuleHandler handler) {
 			this.access = access;
 			this.side = side;
 			location = new TurtleWorldLocation(access);
 			container = new SingletonModuleContainer(handler.getModule());
+			NbtComponent customData = access.getUpgradeData(side).get(DataComponentTypes.CUSTOM_DATA).orElse(null);
+			data = customData == null ? new NbtCompound() : customData.copyNbt();
 		}
 
 		@Nonnull
@@ -169,7 +178,7 @@ public class TurtleUpgradeModule implements ITurtleUpgrade {
 		@Nonnull
 		@Override
 		public NbtCompound getData() {
-			return access.getUpgradeNBTData(side);
+			return data;
 		}
 
 		@Nonnull
@@ -180,7 +189,13 @@ public class TurtleUpgradeModule implements ITurtleUpgrade {
 
 		@Override
 		public void markDataDirty() {
-			access.updateUpgradeNBTData(side);
+			ComponentChanges.Builder builder = ComponentChanges.builder();
+			if (data.isEmpty()) {
+				builder.remove(DataComponentTypes.CUSTOM_DATA);
+			} else {
+				builder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(data));
+			}
+			access.setUpgradeData(side, builder.build());
 		}
 
 		@Override

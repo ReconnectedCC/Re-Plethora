@@ -41,7 +41,7 @@ class Item2d(
     position = ByteBufUtils.readVec2d(buf)
     scale = buf.readFloat()
 
-    val name = Identifier(buf.readString())
+    val name = Identifier.of(buf.readString())
     item = Registries.ITEM[name]
   }
 
@@ -68,16 +68,16 @@ class Item2d(
     if (stack == null) stack = ItemStack(item)
 
     val renderStack = RenderSystem.getModelViewStack()
-    renderStack.push()
+    renderStack.pushMatrix()
     // renderStack.loadIdentity();
-    renderStack.multiplyPositionMatrix(matrices.peek().positionMatrix)
+    renderStack.mul(matrices.peek().positionMatrix)
     RenderSystem.applyModelViewMatrix()
 
     matrices.push()
     ctx.drawItem(stack, 0, 0)
     matrices.pop()
 
-    renderStack.pop()
+    renderStack.popMatrix()
     RenderSystem.applyModelViewMatrix()
     RenderSystem.enableBlend()
 

@@ -68,7 +68,7 @@ class KeyboardModuleItem(settings: Settings) : ModuleItem("keyboard", settings) 
     // Check if the user has permission to use a keyboard here
     if (!canUseKeyboard(world, player, pos, blockEntity)) return PASS
 
-    PlatformHelper.get().openMenu(player,stack.name, KeyboardScreenHandlerFactory(computer, stack.name, this, hand),ComputerContainerData(computer, stack))
+    PlatformHelper.get().openMenu(player, KeyboardScreenHandlerFactory(computer, stack.name, this, hand), ComputerContainerData(computer, stack))
 
     return CONSUME // Don't play an animation
   }
@@ -123,7 +123,7 @@ class KeyboardModuleItem(settings: Settings) : ModuleItem("keyboard", settings) 
       }
 
       val lockCode = (blockEntity as AbstractComputerBlockEntityAccessor).lockCode
-      val range = max(maxRange, PlatformHelper.get().getReachDistance(player))
+      val range = max(maxRange, player.blockInteractionRange)
 
       return LootableContainerBlockEntity.checkUnlocked(player, lockCode, blockEntity.displayName)
         && player.isAlive

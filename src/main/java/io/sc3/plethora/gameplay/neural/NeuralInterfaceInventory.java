@@ -1,10 +1,13 @@
 package io.sc3.plethora.gameplay.neural;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 import io.sc3.plethora.mixin.SimpleInventoryAccessor;
 
@@ -14,26 +17,28 @@ import static io.sc3.plethora.gameplay.neural.NeuralHelpers.isItemValid;
 
 public class NeuralInterfaceInventory extends SimpleInventory {
     final ItemStack parent;
+    private RegistryWrapper.WrapperLookup registries;
 
     public NeuralInterfaceInventory(ItemStack parent) {
         super(INV_SIZE);
 
         this.parent = parent;
 
-        // Write the inventory to Items under the neural interface every time Inventory.markDirty is called
-        addListener(i -> Inventories.writeNbt(parent.getOrCreateNbt(), getOwnStacks()));
+        addListener(i -> writeData());
     }
 
     @Override
     public void onOpen(PlayerEntity player) {
         super.onOpen(player);
-        Inventories.readNbt(parent.getOrCreateNbt(), getOwnStacks());
+        registries = player.getRegistryManager();
+        Inventories.readNbt(getData(), getOwnStacks(), registries);
     }
 
     @Override
     public void onClose(PlayerEntity player) {
         super.onClose(player);
-        Inventories.writeNbt(parent.getOrCreateNbt(), getOwnStacks());
+        registries = player.getRegistryManager();
+        writeData();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class NeuralInterfaceInventory extends SimpleInventory {
     }
 
     public DefaultedList<ItemStack> getOwnStacks() {
-        return ((SimpleInventoryAccessor) this).getStacks();
+        return ((SimpleInventoryAccessor) this).getHeldStacks();
     }
 
     @Override
@@ -59,7 +64,26 @@ public class NeuralInterfaceInventory extends SimpleInventory {
     public void setStack(int slot, ItemStack stack) {
         super.setStack(slot, stack);
 
-        NbtCompound nbt = parent.getOrCreateNbt();
+        NbtCompound nbt = getData();
         nbt.putShort(DIRTY, (short) (nbt.getShort(DIRTY) | (1 << slot)));
+        setData(nbt);
+    }
+
+    private NbtCompound getData() {
+        NbtComponent customData = parent.get(DataComponentTypes.CUSTOM_DATA);
+        return customData == null ? new NbtCompound() : customData.copyNbt();
+    }
+
+    private void writeData() {
+        if (registries == null) return;
+        setData(Inventories.writeNbt(getData(), getOwnStacks(), registries));
+    }
+
+    private void setData(NbtCompound nbt) {
+        if (nbt.isEmpty()) {
+            parent.remove(DataComponentTypes.CUSTOM_DATA);
+        } else {
+            parent.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        }
     }
 }

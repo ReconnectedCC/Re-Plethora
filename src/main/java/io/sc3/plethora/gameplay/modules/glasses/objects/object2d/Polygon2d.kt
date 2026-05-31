@@ -67,17 +67,15 @@ open class Polygon2d(
     val a = points[0]
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
-
-    buffer.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
 
     for (i in 1 until size - 1) {
       val b = points[i]
       val c = points[i + 1]
-      buffer.vertex(matrix, a.x.toFloat(), a.y.toFloat(), 0f).color(red, green, blue, alpha).next()
-      buffer.vertex(matrix, b.x.toFloat(), b.y.toFloat(), 0f).color(red, green, blue, alpha).next()
-      buffer.vertex(matrix, c.x.toFloat(), c.y.toFloat(), 0f).color(red, green, blue, alpha).next()
+      buffer.vertex(matrix, a.x.toFloat(), a.y.toFloat(), 0f).color(red, green, blue, alpha)
+      buffer.vertex(matrix, b.x.toFloat(), b.y.toFloat(), 0f).color(red, green, blue, alpha)
+      buffer.vertex(matrix, c.x.toFloat(), c.y.toFloat(), 0f).color(red, green, blue, alpha)
     }
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())

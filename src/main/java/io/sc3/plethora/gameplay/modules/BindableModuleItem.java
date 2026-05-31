@@ -1,9 +1,12 @@
 package io.sc3.plethora.gameplay.modules;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -33,25 +36,26 @@ public abstract class BindableModuleItem extends ModuleItem {
 
         GameProfile profile = player.getGameProfile();
         if (player.isSneaking() && !profile.getName().startsWith("[") && profile.getId() != null) {
-            NbtCompound nbt = stack.getOrCreateNbt();
+            NbtComponent customData = stack.get(DataComponentTypes.CUSTOM_DATA);
+            NbtCompound nbt = customData == null ? new NbtCompound() : customData.copyNbt();
 
             if (profile.equals(ModuleContextHelpers.getProfile(stack))) {
-                // Remove the binding if we're already bound
                 nbt.remove("id_lower");
                 nbt.remove("id_upper");
                 nbt.remove("bound_name");
-                // If our tag is now empty, clear it - turtle/pocket upgrades require NBT to be exactly the same as the
-                // template item.
-                // TODO: Is this still the case in 1.18 CC? Can we alter this behaviour?
-                if (nbt.isEmpty()) stack.setNbt(null);
+                if (nbt.isEmpty()) {
+                    stack.remove(DataComponentTypes.CUSTOM_DATA);
+                } else {
+                    stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+                }
 
                 player.sendMessage(Text.translatable(getTranslationKey() + ".cleared", player.getName()), true);
             } else {
-                // Otherwise, bind to the current player
                 UUID id = profile.getId();
                 nbt.putLong("id_lower", id.getLeastSignificantBits());
                 nbt.putLong("id_upper", id.getMostSignificantBits());
                 nbt.putString("bound_name", profile.getName());
+                stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 
                 player.sendMessage(Text.translatable(getTranslationKey() + ".bound", player.getName()), true);
             }
@@ -63,8 +67,8 @@ public abstract class BindableModuleItem extends ModuleItem {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
 
         String boundName = ModuleContextHelpers.getEntityName(stack);
         if (boundName != null) {

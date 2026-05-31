@@ -74,13 +74,11 @@ open class FlareOverlayRenderer {
     }
 
     private fun renderQuad(tessellator: Tessellator, matrix4f: Matrix4f, size: Float) {
-      val buffer = tessellator.buffer
-
-      buffer.begin(QUADS, POSITION_TEXTURE)
-      buffer.vertex(matrix4f, -size, -size, 0f).texture(0f, 1f).next()
-      buffer.vertex(matrix4f, -size, +size, 0f).texture(1f, 1f).next()
-      buffer.vertex(matrix4f, +size, +size, 0f).texture(1f, 0f).next()
-      buffer.vertex(matrix4f, +size, -size, 0f).texture(0f, 0f).next()
+      val buffer = tessellator.begin(QUADS, POSITION_TEXTURE)
+      buffer.vertex(matrix4f, -size, -size, 0f).texture(0f, 1f)
+      buffer.vertex(matrix4f, -size, +size, 0f).texture(1f, 1f)
+      buffer.vertex(matrix4f, +size, +size, 0f).texture(1f, 0f)
+      buffer.vertex(matrix4f, +size, -size, 0f).texture(0f, 0f)
       BufferRenderer.drawWithGlobalProgram(buffer.end())
     }
 

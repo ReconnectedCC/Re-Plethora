@@ -20,7 +20,11 @@ class DynamicImageButton(
   onPress: PressAction,
   private val messageSupplier: Supplier<HintedMessage>
 ) : ButtonWidget(x, y, width, height, Text.empty(), onPress, DEFAULT_NARRATION_SUPPLIER) {
-  public override fun renderButton(ctx: DrawContext, mouseX: Int, mouseY: Int, partialTicks: Float) {
+  override fun renderWidget(ctx: DrawContext, mouseX: Int, mouseY: Int, partialTicks: Float) {
+    val (newMessage, newTooltip) = messageSupplier.get()
+    message = newMessage
+    tooltip = newTooltip
+
     RenderSystem.enableBlend()
     RenderSystem.enableDepthTest()
 
@@ -30,13 +34,6 @@ class DynamicImageButton(
     ctx.drawTexture(
       texture, x, y, xTexStart.asInt.toFloat(), yTex.toFloat(), width, height, textureWidth, textureHeight
     )
-  }
-
-  override fun render(ctx: DrawContext, mouseX: Int, mouseY: Int, partialTicks: Float) {
-    val (newMessage, newTooltip) = messageSupplier.get()
-    message = newMessage
-    tooltip = newTooltip
-    super.render(ctx, mouseX, mouseY, partialTicks)
   }
 
   @JvmRecord

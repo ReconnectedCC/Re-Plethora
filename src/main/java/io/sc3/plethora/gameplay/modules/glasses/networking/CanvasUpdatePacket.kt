@@ -6,19 +6,21 @@ import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasHandler.getClient
 import io.sc3.plethora.gameplay.modules.glasses.objects.BaseObject
 import io.sc3.plethora.gameplay.modules.glasses.objects.ObjectRegistry.read
 import io.sc3.plethora.gameplay.modules.glasses.objects.ObjectRegistry.write
-import net.fabricmc.fabric.api.networking.v1.PacketSender
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
 
 data class CanvasUpdatePacket(
   var canvasId: Int = 0,
   var changed: MutableList<BaseObject> = mutableListOf(),
   var removed: IntArray = IntArray(0)
 ): ScLibraryPacket() {
-  override val id = CanvasUpdatePacket.id
+  override fun getId(): CustomPayload.Id<CanvasUpdatePacket> = id
 
-  override fun toBytes(buf: PacketByteBuf) {
+  fun toBytes(buf: PacketByteBuf) {
     buf.writeInt(canvasId)
     buf.writeCollection(changed, ::write)
     buf.writeIntArray(removed)
@@ -26,7 +28,11 @@ data class CanvasUpdatePacket(
 
   companion object {
     @JvmField
-    val id = ModId("canvas_update")
+    val id = CustomPayload.Id<CanvasUpdatePacket>(ModId("canvas_update"))
+
+    @JvmField
+    val codec: PacketCodec<RegistryByteBuf, CanvasUpdatePacket> =
+      PacketCodec.of({ value, buf -> value.toBytes(buf) }, ::fromBytes)
 
     @JvmStatic
     fun fromBytes(buf: PacketByteBuf): CanvasUpdatePacket {
@@ -40,14 +46,15 @@ data class CanvasUpdatePacket(
     }
   }
 
-  override fun onClientReceive(client: MinecraftClient, handler: ClientPlayNetworkHandler,
-                               responseSender: PacketSender) {
+  override fun onClientReceive(ctx: ClientPlayNetworking.Context) {
     val canvas = getClient(canvasId) ?: return
     synchronized(canvas) {
       changed.onEach(canvas::updateObject)
       removed.onEach(canvas::remove)
     }
   }
+
+  override fun onServerReceive(ctx: ServerPlayNetworking.Context) {}
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

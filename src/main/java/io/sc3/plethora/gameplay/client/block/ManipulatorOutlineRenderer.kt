@@ -17,7 +17,7 @@ object ManipulatorOutlineRenderer {
 
   @JvmStatic
   fun onBlockOutline(worldCtx: WorldRenderContext, ctx: BlockOutlineContext): Boolean {
-    ticks += worldCtx.tickDelta()
+    ticks += worldCtx.tickCounter().getTickDelta(false)
 
     val world = ctx.entity().world
     val pos = ctx.blockPos()
@@ -83,6 +83,5 @@ object ManipulatorOutlineRenderer {
       .overlay(OverlayTexture.DEFAULT_UV)
       .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
       .normal(0.0f, 0.0f, 1.0f)
-      .next()
   }*/
 }

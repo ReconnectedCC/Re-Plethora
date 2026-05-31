@@ -71,46 +71,44 @@ class Box3d(
     val maxX = (minX + width).toFloat(); val maxY = (minY + height).toFloat(); val maxZ = (minZ + depth).toFloat()
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
 
-    buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-
     // Down
-    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha)
 
     // Up
-    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha)
 
     // North
-    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha)
 
     // South
-    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha)
 
     // East
-    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, maxX, minY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, maxZ).color(red, green, blue, alpha)
 
     // West
-    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, minY, minZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, minY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, maxZ).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, minZ).color(red, green, blue, alpha)
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())
   }
