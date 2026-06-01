@@ -21,7 +21,7 @@
     "IAI"
   ],
   "result": {
-    "item": "plethora:module_glasses"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:module_glasses"
+  }
 }

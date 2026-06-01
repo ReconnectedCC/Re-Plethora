@@ -10,10 +10,13 @@ import net.minecraft.item.ItemConvertible
 import net.minecraft.registry.RegistryWrapper
 import java.util.concurrent.CompletableFuture
 
-class RecipeGenerator(out: FabricDataOutput, registriesFuture: CompletableFuture<RegistryWrapper.WrapperLookup>) :
-  FabricRecipeProvider(out, registriesFuture) {
+class RecipeGenerator(
+  out: FabricDataOutput,
+  private val registriesFuture: CompletableFuture<RegistryWrapper.WrapperLookup>
+) : FabricRecipeProvider(out, registriesFuture) {
   override fun generate(exporter: RecipeExporter) {
-    RECIPE_HANDLERS.forEach { it.generateRecipes(exporter) }
+    val registries = registriesFuture.join()
+    RECIPE_HANDLERS.forEach { it.generateRecipes(exporter, registries) }
   }
 }
 

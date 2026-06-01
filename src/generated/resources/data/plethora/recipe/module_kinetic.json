@@ -23,7 +23,7 @@
     "RGR"
   ],
   "result": {
-    "item": "plethora:module_kinetic"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:module_kinetic"
+  }
 }

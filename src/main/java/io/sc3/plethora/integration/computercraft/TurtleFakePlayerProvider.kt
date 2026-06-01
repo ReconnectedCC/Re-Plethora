@@ -5,6 +5,7 @@ import dan200.computercraft.shared.turtle.TurtleUtil
 import dan200.computercraft.shared.util.DirectionUtil
 import io.sc3.plethora.api.IPlayerOwnable
 import io.sc3.plethora.gameplay.PlethoraFakePlayer
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Hand
@@ -53,7 +54,13 @@ object TurtleFakePlayerProvider {
 
     playerInv.markDirty()
 
-    // Add properties
+    // Add the held item's attribute modifiers (e.g. attack damage) to the fake player so its actions reflect the tool.
+    val activeStack = player.getStackInHand(Hand.MAIN_HAND)
+    if (!activeStack.isEmpty) {
+      activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
+        player.attributes.getCustomInstance(attribute)?.addTemporaryModifier(modifier)
+      }
+    }
   }
 
   @JvmStatic
@@ -61,7 +68,13 @@ object TurtleFakePlayerProvider {
     val playerInv = player.inventory
     playerInv.selectedSlot = 0
 
-    // Remove properties
+    // Remove the held item's attribute modifiers that were applied in load().
+    val activeStack = player.getStackInHand(Hand.MAIN_HAND)
+    if (!activeStack.isEmpty) {
+      activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
+        player.attributes.getCustomInstance(attribute)?.removeModifier(modifier)
+      }
+    }
 
     // Copy primary items into turtle playerInv and then insert/drop the rest
     val turtleInv = turtle.inventory

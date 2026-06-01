@@ -1,3 +1,4 @@
 {
-  "type": "plethora:scanner_module_upgrade"
+  "type": "plethora:scanner_module_upgrade",
+  "category": "misc"
 }

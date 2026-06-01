@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:computer_advanced"
-            ]
+            "items": "computercraft:computer_advanced"
           }
         ]
       },
@@ -17,9 +15,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:computer_normal"
-            ]
+            "items": "computercraft:computer_normal"
           }
         ]
       },
@@ -29,9 +25,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:pocket_computer_advanced"
-            ]
+            "items": "computercraft:pocket_computer_advanced"
           }
         ]
       },
@@ -41,9 +35,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:pocket_computer_normal"
-            ]
+            "items": "computercraft:pocket_computer_normal"
           }
         ]
       },
@@ -59,9 +51,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:turtle_advanced"
-            ]
+            "items": "computercraft:turtle_advanced"
           }
         ]
       },
@@ -71,9 +61,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "computercraft:turtle_normal"
-            ]
+            "items": "computercraft:turtle_normal"
           }
         ]
       },
@@ -82,19 +70,18 @@
   },
   "requirements": [
     [
+      "has_the_recipe",
       "has_computer_normal",
       "has_computer_advanced",
       "has_turtle_normal",
       "has_turtle_advanced",
       "has_pocket_normal",
-      "has_pocket_advanced",
-      "has_the_recipe"
+      "has_pocket_advanced"
     ]
   ],
   "rewards": {
     "recipes": [
       "plethora:manipulator_mark_2"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

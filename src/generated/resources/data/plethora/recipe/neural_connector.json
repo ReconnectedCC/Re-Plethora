@@ -18,7 +18,7 @@
     "IEI"
   ],
   "result": {
-    "item": "plethora:neural_connector"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:neural_connector"
+  }
 }

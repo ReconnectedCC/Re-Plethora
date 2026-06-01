@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "plethora:manipulator_mark_1"
-            ]
+            "items": "plethora:manipulator_mark_1"
           }
         ]
       },
@@ -17,9 +15,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "plethora:manipulator_mark_2"
-            ]
+            "items": "plethora:manipulator_mark_2"
           }
         ]
       },
@@ -29,9 +25,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "plethora:neural_interface"
-            ]
+            "items": "plethora:neural_interface"
           }
         ]
       },
@@ -46,16 +40,15 @@
   },
   "requirements": [
     [
+      "has_the_recipe",
       "has_manipulator_mark_1",
       "has_manipulator_mark_2",
-      "has_neural_interface",
-      "has_the_recipe"
+      "has_neural_interface"
     ]
   ],
   "rewards": {
     "recipes": [
       "plethora:module_glasses"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }

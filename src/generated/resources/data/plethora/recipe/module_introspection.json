@@ -18,7 +18,7 @@
     "GCG"
   ],
   "result": {
-    "item": "plethora:module_introspection"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:module_introspection"
+  }
 }

@@ -24,7 +24,7 @@
     " GM"
   ],
   "result": {
-    "item": "plethora:neural_interface"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:neural_interface"
+  }
 }

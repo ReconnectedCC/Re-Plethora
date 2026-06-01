@@ -21,7 +21,7 @@
     "III"
   ],
   "result": {
-    "item": "plethora:module_scanner"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "plethora:module_scanner"
+  }
 }
