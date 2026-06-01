@@ -112,6 +112,8 @@ class NeuralInterfaceItem(settings: Settings?) : TrinketItem(settings), IMedia {
           dirty = true
         }
 
+        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
+
         if (neural.update(player, stack, dirtyStatus.toInt())) {
           dirty = true
         }
@@ -119,7 +121,6 @@ class NeuralInterfaceItem(settings: Settings?) : TrinketItem(settings), IMedia {
         if (dirty && slot != null) {
           slot.inventory().markDirty()
         }
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
       }
     }
   }
