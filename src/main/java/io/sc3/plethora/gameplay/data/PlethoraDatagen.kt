@@ -1,5 +1,7 @@
 package io.sc3.plethora.gameplay.data
 
+import dan200.computercraft.api.pocket.IPocketUpgrade
+import dan200.computercraft.api.turtle.ITurtleUpgrade
 import io.sc3.plethora.gameplay.data.recipes.RecipeGenerator
 import io.sc3.plethora.gameplay.registry.Registration
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint
@@ -15,8 +17,6 @@ object PlethoraDatagen : DataGeneratorEntrypoint {
     log.info("Plethora datagen initializing")
 
     val pack = generator.createPack()
-    pack.addProvider(::TurtleUpgradeProvider)
-    pack.addProvider(::PocketUpgradeProvider)
     pack.addProvider(::ModelProvider)
     pack.addProvider(::BlockLootTableProvider)
     pack.addProvider(::BlockTagProvider)
@@ -24,10 +24,12 @@ object PlethoraDatagen : DataGeneratorEntrypoint {
     pack.addProvider(::DamageTypeTagProvider)
     pack.addProvider(::DynamicRegistryProvider)
     pack.addProvider(::EntityTypeTagProvider)
-    pack.addProvider { out, _ -> RecipeGenerator(out) }
+    pack.addProvider(::RecipeGenerator)
   }
 
   override fun buildRegistry(registryBuilder: RegistryBuilder) {
     registryBuilder.addRegistry(RegistryKeys.DAMAGE_TYPE, Registration::bootstrapDamageTypes)
+    registryBuilder.addRegistry(ITurtleUpgrade.REGISTRY, ::bootstrapTurtleUpgrades)
+    registryBuilder.addRegistry(IPocketUpgrade.REGISTRY, ::bootstrapPocketUpgrades)
   }
 }

@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier
 import java.nio.charset.StandardCharsets
 
 object SignGenericPeripheral : GenericPeripheral {
-  override fun id() = Identifier("sign").toString()
+  override fun id() = Identifier.of("sign").toString()
 
   @LuaFunction(mainThread = true)
   @JvmStatic

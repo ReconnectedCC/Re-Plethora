@@ -15,7 +15,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer.TextLayerType
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.LightmapTextureManager
-import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.network.PacketByteBuf
 
@@ -68,8 +67,7 @@ class Text2d(
     matrices.translate(position.x, position.y, 0.0)
     matrices.scale(scale, scale, 1f)
 
-    val buffer = Tessellator.getInstance().buffer
-    val immediate = VertexConsumerProvider.immediate(buffer)
+    val immediate = ctx.vertexConsumers
     val matrix = matrices.peek().positionMatrix
 
     var y = 0

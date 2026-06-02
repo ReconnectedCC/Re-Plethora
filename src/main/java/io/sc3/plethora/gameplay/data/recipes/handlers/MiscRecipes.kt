@@ -1,30 +1,29 @@
 package io.sc3.plethora.gameplay.data.recipes.handlers
 
 import dan200.computercraft.api.ComputerCraftTags
+import dan200.computercraft.data.recipe.ShapedSpecBuilder
 import dan200.computercraft.shared.ModRegistry
-import io.sc3.library.recipe.BetterComplexRecipeJsonBuilder
 import io.sc3.library.recipe.RecipeHandler
-import io.sc3.library.recipe.offerTo
 import io.sc3.plethora.Plethora.ModId
 import io.sc3.plethora.gameplay.data.recipes.NeuralInterfaceRecipe
 import io.sc3.plethora.gameplay.data.recipes.inventoryChange
 import io.sc3.plethora.gameplay.registry.Registration.ModItems
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags
 import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder
-import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.item.Items
 import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.Registries.RECIPE_SERIALIZER
 import net.minecraft.registry.Registry.register
-import java.util.function.Consumer
 
 object MiscRecipes : RecipeHandler {
   override fun registerSerializers() {
     register(RECIPE_SERIALIZER, ModId("neural_interface"), NeuralInterfaceRecipe.Serializer)
   }
 
-  override fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+  override fun generateRecipes(exporter: RecipeExporter, registries: RegistryWrapper.WrapperLookup) {
     // Manipulator Mark I
     ShapedRecipeJsonBuilder
       .create(RecipeCategory.MISC, ModItems.MANIPULATOR_MARK_1)
@@ -65,18 +64,19 @@ object MiscRecipes : RecipeHandler {
       .offerTo(exporter)
 
     // Neural Interface
-    ShapedRecipeJsonBuilder
-      .create(RecipeCategory.MISC, ModItems.NEURAL_INTERFACE)
+    ShapedSpecBuilder
+      .shaped(RecipeCategory.MISC, ModItems.NEURAL_INTERFACE)
       .pattern("  G")
       .pattern("IPR")
       .pattern(" GM")
-      .input('G', ConventionalItemTags.GOLD_INGOTS)
-      .input('I', ConventionalItemTags.IRON_INGOTS)
-      .input('R', ConventionalItemTags.REDSTONE_DUSTS)
-      .input('M', ComputerCraftTags.Items.WIRED_MODEM)
-      .input('P', ModRegistry.Items.POCKET_COMPUTER_ADVANCED.get())
+      .define('G', ConventionalItemTags.GOLD_INGOTS)
+      .define('I', ConventionalItemTags.IRON_INGOTS)
+      .define('R', ConventionalItemTags.REDSTONE_DUSTS)
+      .define('M', ComputerCraftTags.Items.WIRED_MODEM)
+      .define('P', ModRegistry.Items.POCKET_COMPUTER_ADVANCED.get())
       .hasComputer()
-      .offerTo(exporter, NeuralInterfaceRecipe.Serializer)
+      .build(::NeuralInterfaceRecipe)
+      .save(exporter, ModId("neural_interface"))
   }
 
   private val computerCriteria = lazy {
@@ -94,7 +94,7 @@ object MiscRecipes : RecipeHandler {
     computerCriteria.value.forEach { criterion(it.key, it.value) }
   }
 
-  private fun BetterComplexRecipeJsonBuilder<*>.hasComputer() = apply {
-    computerCriteria.value.forEach { criterion(it.key, it.value) }
+  private fun ShapedSpecBuilder.hasComputer() = apply {
+    computerCriteria.value.forEach { unlockedBy(it.key, it.value) }
   }
 }

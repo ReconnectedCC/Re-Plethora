@@ -4,12 +4,15 @@ import dan200.computercraft.core.computer.ComputerSide
 import dan200.computercraft.impl.PocketUpgrades
 import dan200.computercraft.shared.computer.core.ComputerFamily.ADVANCED
 import dan200.computercraft.shared.computer.core.ServerComputer
+import dan200.computercraft.shared.util.ComponentMap
 import io.sc3.plethora.Plethora
 import io.sc3.plethora.core.executor.TaskRunner
 import io.sc3.plethora.gameplay.neural.NeuralComputerHandler.HEIGHT
 import io.sc3.plethora.gameplay.neural.NeuralComputerHandler.WIDTH
 import io.sc3.plethora.gameplay.neural.NeuralHelpers.INV_SIZE
 import io.sc3.plethora.util.Helpers
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.entity.LivingEntity
 import net.minecraft.inventory.Inventories
 import net.minecraft.item.ItemStack
@@ -24,8 +27,9 @@ import javax.annotation.Nonnull
 class NeuralComputer(
   world: ServerWorld,
   pos: BlockPos,
-  properties: Properties?,
-) : ServerComputer(world, pos, properties) {
+  id: Int,
+  label: String?,
+) : ServerComputer(world, pos, id, label, ADVANCED, WIDTH, HEIGHT, ComponentMap.empty()) {
   var entity: WeakReference<LivingEntity>? = null
     private set
 
@@ -41,7 +45,7 @@ class NeuralComputer(
 
   fun readModuleData(nbt: NbtCompound) {
     for (key in nbt.keys) {
-      moduleData[Identifier(key)] = nbt.getCompound(key)
+      moduleData[Identifier.of(key)] = nbt.getCompound(key)
     }
   }
 
@@ -74,7 +78,8 @@ class NeuralComputer(
     // Sync changed slots
     if (dirty != 0) {
       stacks.clear()
-      Inventories.readNbt(neuralStack.orCreateNbt, stacks)
+      val nbt = neuralStack.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: NbtCompound()
+      Inventories.readNbt(nbt, stacks, (owner.entityWorld as ServerWorld).registryManager)
       moduleHash = Helpers.hashStacks(stacks.subList(NeuralHelpers.PERIPHERAL_SIZE, INV_SIZE))
     }
 
@@ -83,10 +88,10 @@ class NeuralComputer(
       val stack = stacks[slot]
       if (stack.isEmpty) continue
 
-      val upgrade = PocketUpgrades.instance()[stack] ?: continue
+      val upgrade = PocketUpgrades.instance().get((owner.entityWorld as ServerWorld).registryManager, stack) ?: continue
       val side = ComputerSide.valueOf(if (slot < NeuralHelpers.BACK) slot else slot + 1)
       val peripheral = getPeripheral(side) ?: continue
-      upgrade.upgrade.update(access, peripheral)
+      upgrade.upgrade().update(access, peripheral)
     }
 
     if (dirty != 0) {
@@ -122,7 +127,7 @@ class NeuralComputer(
         nbt.put(key.toString(), value)
       }
 
-      neuralStack.orCreateNbt.put(NeuralComputerHandler.MODULE_DATA, nbt)
+      NbtComponent.set(DataComponentTypes.CUSTOM_DATA, neuralStack) { it.put(NeuralComputerHandler.MODULE_DATA, nbt) }
       return true
     }
 

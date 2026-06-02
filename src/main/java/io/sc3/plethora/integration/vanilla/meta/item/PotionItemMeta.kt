@@ -1,16 +1,16 @@
 package io.sc3.plethora.integration.vanilla.meta.item
 
-import io.sc3.plethora.api.meta.ItemStackMetaProvider
+import io.sc3.plethora.api.meta.BasicMetaProvider
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ItemStack
 import net.minecraft.item.LingeringPotionItem
-import net.minecraft.item.PotionItem
 import net.minecraft.item.SplashPotionItem
-import net.minecraft.potion.PotionUtil
 import net.minecraft.registry.Registries
 
-object PotionItemMeta : ItemStackMetaProvider<PotionItem>(PotionItem::class.java) {
-  override fun getMeta(stack: ItemStack, item: PotionItem): MutableMap<String, *> {
-    val potion = PotionUtil.getPotion(stack)
+object PotionItemMeta : BasicMetaProvider<ItemStack>() {
+  override fun getMeta(target: ItemStack): Map<String, *> {
+    val contents = target.get(DataComponentTypes.POTION_CONTENTS) ?: return emptyMap<String, Any>()
+    val item = target.item
 
     val data = mutableMapOf<String, Any>(
       "potionType" to when (item) {
@@ -18,16 +18,19 @@ object PotionItemMeta : ItemStackMetaProvider<PotionItem>(PotionItem::class.java
         is SplashPotionItem    -> "splash"
         else                   -> "normal"
       },
-      "splash" to (item is SplashPotionItem),
-      "potion" to Registries.POTION.getId(potion).toString()
+      "splash" to (item is SplashPotionItem)
     )
 
-    val effects = PotionUtil.getPotionEffects(stack)
+    contents.potion().ifPresent { potion ->
+      data["potion"] = Registries.POTION.getId(potion.value()).toString()
+    }
+
+    val effects = contents.effects.toList()
     if (effects.isNotEmpty()) {
       data["effects"] = effects.map { effect ->
-        val type = effect.effectType
+        val type = effect.effectType.value()
         mapOf(
-          "duration"  to effect.duration / 20, // ticks!
+          "duration"  to effect.duration / 20,
           "amplifier" to effect.amplifier,
           "name"      to type.name.string,
           "instant"   to type.isInstant,

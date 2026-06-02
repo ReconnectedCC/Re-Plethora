@@ -2,27 +2,33 @@ package io.sc3.plethora.gameplay.modules.keyboard
 
 import io.sc3.library.networking.ScLibraryPacket
 import io.sc3.plethora.Plethora.ModId
-import io.sc3.plethora.gameplay.modules.glasses.networking.CanvasAddPacket
-import net.fabricmc.fabric.api.networking.v1.PacketSender
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayNetworkHandler
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.RegistryByteBuf
+import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.packet.CustomPayload
 
 data class KeyboardListenPacket(val listening: Boolean): ScLibraryPacket() {
-  override val id = CanvasAddPacket.id
+  override fun getId(): CustomPayload.Id<KeyboardListenPacket> = id
 
-  override fun toBytes(buf: PacketByteBuf) {
+  fun toBytes(buf: PacketByteBuf) {
     buf.writeBoolean(listening)
   }
 
-  override fun onClientReceive(client: MinecraftClient, handler: ClientPlayNetworkHandler,
-                               responseSender: PacketSender) {
+  override fun onClientReceive(ctx: ClientPlayNetworking.Context) {
     ClientKeyListener.listening = listening
   }
 
+  override fun onServerReceive(ctx: ServerPlayNetworking.Context) {}
+
   companion object {
     @JvmField
-    val id = ModId("keyboard_listen")
+    val id = CustomPayload.Id<KeyboardListenPacket>(ModId("keyboard_listen"))
+
+    @JvmField
+    val codec: PacketCodec<RegistryByteBuf, KeyboardListenPacket> =
+      PacketCodec.of({ value, buf -> value.toBytes(buf) }, ::fromBytes)
 
     @JvmStatic
     fun fromBytes(buf: PacketByteBuf) =

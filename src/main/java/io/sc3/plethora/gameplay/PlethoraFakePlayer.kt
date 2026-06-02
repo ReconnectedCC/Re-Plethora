@@ -10,8 +10,6 @@ import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.block.FluidBlock
 import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityDimensions
-import net.minecraft.entity.EntityPose
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket.Action.START_DESTROY_BLOCK
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.HoverEvent
@@ -29,7 +27,7 @@ class PlethoraFakePlayer(
   profile: GameProfile?
 ) : FakePlayer(
   world,
-  if (profile != null && profile.isComplete) profile else PROFILE
+  if (profile != null && profile.id != null && profile.name.isNotEmpty()) profile else PROFILE
 ) {
   private val owner: WeakReference<Entity>? = ownerEntity
     ?.also { customName = it.name }
@@ -52,9 +50,6 @@ class PlethoraFakePlayer(
   override fun getPitch(tickDelta: Float): Float = pitch // No pitch lerping
   override fun getYaw(tickDelta: Float): Float = yaw // No yaw lerping, and don't use head yaw like livingEntity does
   override fun getEyeY() = y
-  override fun getEyeHeight(pose: EntityPose) = 0.0f
-  override fun getActiveEyeHeight(pose: EntityPose, dimensions: EntityDimensions) = 0.0f
-
   fun updateCooldown() {
     handSwingTicks = 20
   }

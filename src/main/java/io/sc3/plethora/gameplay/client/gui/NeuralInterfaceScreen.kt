@@ -56,7 +56,7 @@ class NeuralInterfaceScreen(
   }
 
   override fun createTerminal() = TerminalWidget(
-    terminalData, computerInput, computerActions,
+    terminalData, input,
     x + BORDER + AbstractComputerMenu.SIDEBAR_WIDTH,
     y + BORDER
   )

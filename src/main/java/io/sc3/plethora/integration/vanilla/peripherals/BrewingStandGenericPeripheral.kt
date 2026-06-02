@@ -7,7 +7,7 @@ import net.minecraft.block.entity.BrewingStandBlockEntity
 import net.minecraft.util.Identifier
 
 object BrewingStandGenericPeripheral : GenericPeripheral {
-  override fun id() = Identifier("brewing_stand").toString()
+  override fun id() = Identifier.of("brewing_stand").toString()
 
   @LuaFunction(mainThread = true)
   @JvmStatic

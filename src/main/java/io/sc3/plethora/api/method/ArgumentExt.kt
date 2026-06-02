@@ -91,7 +91,7 @@ object ArgumentExt {
   }
 
   fun IArguments.getItem(index: Int): Item {
-    val id = Identifier(getString(index))
+    val id = Identifier.of(getString(index))
     if (!Registries.ITEM.containsId(id)) throw LuaException("Unknown item '$id'")
     return Registries.ITEM[id]
   }

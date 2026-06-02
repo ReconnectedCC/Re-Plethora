@@ -51,13 +51,11 @@ class Triangle2d(
     setupFlat()
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
-
-    buffer.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
-    buffer.vertex(matrix, points[0].x.toFloat(), points[0].y.toFloat(), 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, points[1].x.toFloat(), points[1].y.toFloat(), 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, points[2].x.toFloat(), points[2].y.toFloat(), 0f).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, points[0].x.toFloat(), points[0].y.toFloat(), 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, points[1].x.toFloat(), points[1].y.toFloat(), 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, points[2].x.toFloat(), points[2].y.toFloat(), 0f).color(red, green, blue, alpha)
     BufferRenderer.drawWithGlobalProgram(buffer.end())
   }
 }

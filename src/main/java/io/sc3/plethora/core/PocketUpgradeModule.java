@@ -6,9 +6,14 @@ import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.pocket.IPocketAccess;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import net.minecraft.entity.Entity;
+import dan200.computercraft.api.upgrades.UpgradeType;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
@@ -28,6 +33,7 @@ import io.sc3.plethora.api.module.SingletonModuleContainer;
 import io.sc3.plethora.api.reference.ConstantReference;
 import io.sc3.plethora.api.reference.IReference;
 import io.sc3.plethora.core.executor.TaskRunner;
+import io.sc3.plethora.gameplay.registry.Registration;
 import io.sc3.plethora.util.PlayerHelpers;
 
 import javax.annotation.Nonnull;
@@ -51,14 +57,14 @@ public class PocketUpgradeModule implements IPocketUpgrade {
 
 	@Nonnull
 	@Override
-	public Identifier getUpgradeID() {
-		return handler.getModule();
+	public UpgradeType<? extends IPocketUpgrade> getType() {
+		return Registration.ModPocketUpgradeTypes.MODULE;
 	}
 
 	@Nonnull
 	@Override
-	public String getUnlocalisedAdjective() {
-		return adjective;
+	public Text getAdjective() {
+		return Text.translatable(adjective);
 	}
 
 	@Nonnull
@@ -157,7 +163,7 @@ public class PocketUpgradeModule implements IPocketUpgrade {
 			Pair<List<RegisteredMethod<?>>, List<UnbakedContext<?>>> methods,
 			List<IAttachable> attachments
 		) {
-			super(owner.getUpgradeID().toString(), owner, methods, new TaskRunner(), attachments);
+			super(owner.handler.getModule().toString(), owner, methods, new TaskRunner(), attachments);
 			entity = access.entity;
 			access.wrapper = this;
 		}
@@ -179,12 +185,15 @@ public class PocketUpgradeModule implements IPocketUpgrade {
 		private final Entity entity;
 		private final IWorldLocation location;
 		private final IModuleContainer container;
+		private final NbtCompound data;
 
 		private PocketModuleAccess(IPocketAccess access, IModuleHandler handler) {
 			entity = access.getEntity();
 			location = new EntityWorldLocation(entity);
 			this.access = access;
 			container = new SingletonModuleContainer(handler.getModule());
+			NbtComponent customData = access.getUpgradeData().get(DataComponentTypes.CUSTOM_DATA).orElse(null);
+			data = customData == null ? new NbtCompound() : customData.copyNbt();
 		}
 
 		@Nonnull
@@ -208,7 +217,7 @@ public class PocketUpgradeModule implements IPocketUpgrade {
 		@Nonnull
 		@Override
 		public NbtCompound getData() {
-			return access.getUpgradeNBTData();
+			return data;
 		}
 
 		@Nonnull
@@ -219,7 +228,13 @@ public class PocketUpgradeModule implements IPocketUpgrade {
 
 		@Override
 		public void markDataDirty() {
-			access.updateUpgradeNBTData();
+			ComponentChanges.Builder builder = ComponentChanges.builder();
+			if (data.isEmpty()) {
+				builder.remove(DataComponentTypes.CUSTOM_DATA);
+			} else {
+				builder.add(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(data));
+			}
+			access.setUpgradeData(builder.build());
 		}
 
 		@Override

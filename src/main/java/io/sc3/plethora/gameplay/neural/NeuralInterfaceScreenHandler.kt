@@ -15,6 +15,7 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.screen.slot.Slot
+import net.minecraft.screen.ScreenHandlerType
 import java.util.function.Predicate
 
 class NeuralInterfaceScreenHandler private constructor(
@@ -25,7 +26,7 @@ class NeuralInterfaceScreenHandler private constructor(
   computer: ServerComputer?,
   data: ComputerContainerData?,
 ) : AbstractComputerMenu(
-  NEURAL_INTERFACE_HANDLER_TYPE, syncId, canUse, ADVANCED, computer, data
+  NEURAL_INTERFACE_HANDLER_TYPE as ScreenHandlerType<out AbstractComputerMenu>, syncId, canUse, ADVANCED, computer, data
 ) {
   val peripheralSlots: List<Slot>
   val moduleSlots: List<Slot>

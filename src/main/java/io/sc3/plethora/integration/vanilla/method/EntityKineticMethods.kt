@@ -206,7 +206,7 @@ object EntityKineticMethods {
           continue
         }
 
-        if(player.getEyePos().squaredDistanceTo(Vec3d.ofCenter(pos)) > ServerPlayNetworkHandler.MAX_BREAK_SQUARED_DISTANCE){
+        if(player.getEyePos().squaredDistanceTo(Vec3d.ofCenter(pos)) > 36.0){
           stopDigging(player)
           continue
         }

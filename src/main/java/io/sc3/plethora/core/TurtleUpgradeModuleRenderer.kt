@@ -4,6 +4,7 @@ import dan200.computercraft.api.client.TransformedModel
 import dan200.computercraft.api.client.turtle.TurtleUpgradeModeller
 import dan200.computercraft.api.turtle.ITurtleAccess
 import dan200.computercraft.api.turtle.TurtleSide
+import net.minecraft.component.ComponentChanges
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.AffineTransformation
 import net.minecraft.util.math.RotationAxis
@@ -25,7 +26,12 @@ object TurtleUpgradeModuleRenderer : TurtleUpgradeModeller<TurtleUpgradeModule> 
     return AffineTransformation(matrices.peek().positionMatrix)
   }
 
-  override fun getModel(module: TurtleUpgradeModule, turtle: ITurtleAccess?, side: TurtleSide): TransformedModel {
+  override fun getModel(
+    module: TurtleUpgradeModule,
+    turtle: ITurtleAccess?,
+    side: TurtleSide,
+    components: ComponentChanges
+  ): TransformedModel {
     val model = module.handler.model
 
     val baseTransform = if (side == TurtleSide.LEFT) leftTransform else rightTransform

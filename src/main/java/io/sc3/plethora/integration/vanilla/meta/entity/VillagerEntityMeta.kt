@@ -16,9 +16,9 @@ object VillagerEntityMeta : BaseMetaProvider<VillagerEntity>(
     var outTrades = ArrayList<HashMap<String,Any?>>()
     for (offer in context.target.offers) {
       var trade = HashMap<String,Any?>()
-      trade["originalFirstBuy"] = ContextHelpers.wrapStack(context,offer.originalFirstBuyItem)
-      trade["adjustedFirstBuy"] = ContextHelpers.wrapStack(context,offer.adjustedFirstBuyItem)
-      trade["secondBuyItem"] = ContextHelpers.wrapStack(context,offer.secondBuyItem)
+      trade["originalFirstBuy"] = ContextHelpers.wrapStack(context, offer.originalFirstBuyItem)
+      trade["adjustedFirstBuy"] = ContextHelpers.wrapStack(context, offer.displayedFirstBuyItem)
+      trade["secondBuyItem"] = offer.secondBuyItem.map { ContextHelpers.wrapStack(context, it.itemStack()) }.orElse(null)
       trade["sellItem"] = ContextHelpers.wrapStack(context,offer.sellItem)
       trade["isDisabled"] = offer.isDisabled()
       outTrades.add(trade)

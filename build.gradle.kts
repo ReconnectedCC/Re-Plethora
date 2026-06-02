@@ -51,9 +51,24 @@ val archivesBaseName = "plethora"
 version = modVersion
 group = mavenGroup
 
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(21))
+  }
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType<JavaCompile>().configureEach {
+  javaCompiler.set(javaToolchains.compilerFor {
+    languageVersion.set(JavaLanguageVersion.of(21))
+  })
+  options.release.set(21)
+}
+
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
-    jvmTarget.set(JvmTarget.JVM_17)
+    jvmTarget.set(JvmTarget.JVM_21)
     apiVersion.set(KotlinVersion.KOTLIN_1_9)
     languageVersion.set(KotlinVersion.KOTLIN_1_9)
   }
@@ -90,6 +105,12 @@ repositories {
     }
   }
 
+  maven("https://api.modrinth.com/maven") {
+    content {
+      includeGroup("maven.modrinth")
+    }
+  }
+
   maven("https://maven.terraformersmc.com") {
     // Trinkets, mod-menu
     content {
@@ -102,6 +123,7 @@ repositories {
     // Cardinal Components API (dependency of Trinkets)
     content {
       includeGroup("dev.onyxstudios.cardinal-components-api")
+      includeGroup("org.ladysnake.cardinal-components-api")
     }
   }
 
@@ -150,16 +172,16 @@ dependencies {
   implementation(include("io.leangen.geantyref", "geantyref", "1.3.13"))
   implementation(include("com.typesafe", "config", "1.4.2"))
 
-  modApi("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion") {
+  modApi("maven.modrinth:cloth-config:$clothConfigVersion+fabric") {
     exclude("net.fabricmc.fabric-api")
   }
-  include("me.shedaniel.cloth", "cloth-config-fabric", clothConfigVersion)
+  include("maven.modrinth:cloth-config:$clothConfigVersion+fabric")
   modImplementation(include("me.shedaniel.cloth.api", "cloth-utils-v1", clothApiVersion))
 
   modImplementation(include("com.terraformersmc", "modmenu", modMenuVersion))
 
-  modImplementation(include("dev.onyxstudios.cardinal-components-api", "cardinal-components-base", cardinalComponentsVersion))
-  modImplementation(include("dev.onyxstudios.cardinal-components-api", "cardinal-components-entity", cardinalComponentsVersion))
+  modImplementation(include("org.ladysnake.cardinal-components-api", "cardinal-components-base", cardinalComponentsVersion))
+  modImplementation(include("org.ladysnake.cardinal-components-api", "cardinal-components-entity", cardinalComponentsVersion))
 
   // ===========================
   // Third party mod integration
@@ -311,5 +333,5 @@ publishing {
 
 kotlin {
   // hints gradle which ide to use, including for compiling java.
-  jvmToolchain(17)
+  jvmToolchain(21)
 }

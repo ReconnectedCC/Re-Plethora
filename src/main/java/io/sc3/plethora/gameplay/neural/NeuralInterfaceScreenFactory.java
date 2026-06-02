@@ -7,12 +7,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-public class NeuralInterfaceScreenFactory implements ExtendedScreenHandlerFactory {
+public class NeuralInterfaceScreenFactory implements ExtendedScreenHandlerFactory<ComputerContainerData> {
     public enum TargetType {
         PLAYER, ENTITY
     }
@@ -39,11 +38,11 @@ public class NeuralInterfaceScreenFactory implements ExtendedScreenHandlerFactor
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        new ComputerContainerData(computer, stack).toBytes(buf);
+    public ComputerContainerData getScreenOpeningData(ServerPlayerEntity player) {
+        return new ComputerContainerData(computer, stack);
     }
 
-    public static NeuralInterfaceScreenHandler fromPacket(int syncId, PlayerInventory inv, PacketByteBuf buf) {
-        return NeuralInterfaceScreenHandler.of(syncId, inv, new ComputerContainerData(buf));
+    public static NeuralInterfaceScreenHandler fromPacket(int syncId, PlayerInventory inv, ComputerContainerData data) {
+        return NeuralInterfaceScreenHandler.of(syncId, inv, data);
     }
 }

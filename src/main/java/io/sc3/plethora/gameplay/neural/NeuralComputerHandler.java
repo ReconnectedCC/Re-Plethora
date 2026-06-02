@@ -7,10 +7,13 @@ import dan200.computercraft.shared.computer.core.ServerComputerRegistry;
 import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.util.IDAssigner;
 import dev.emi.trinkets.api.SlotReference;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 
 import javax.annotation.Nonnull;
 
@@ -36,7 +39,7 @@ public class NeuralComputerHandler {
     }
 
     public static NeuralComputer getServer(@Nonnull ItemStack stack, LivingEntity owner, @Nonnull SlotReference slot) {
-        NbtCompound nbt = stack.getOrCreateNbt();
+        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
 
         final ServerComputerRegistry manager = ServerContext.get(Objects.requireNonNull(owner.getServer())).registry();
         final int sessionId = manager.getSessionID();
@@ -56,17 +59,15 @@ public class NeuralComputerHandler {
                 ? nbt.getInt(COMPUTER_ID)
                 : ComputerCraftAPI.createUniqueNumberedSaveDir(owner.getServer(), IDAssigner.COMPUTER);
 
-            String label = stack.hasCustomName() ? stack.getName().getString() : null;
-            //TODO: Create Component for NeuralComputer mayhaps
-            var neuralProperties = ServerComputer.properties(computerId, ComputerFamily.ADVANCED);
-            neuralProperties.terminalSize(WIDTH, HEIGHT);
-            neuralProperties.label(label);
-            neural = new NeuralComputer((ServerWorld)owner.getEntityWorld(), owner.getBlockPos(), neuralProperties);
+            Text customName = stack.get(DataComponentTypes.CUSTOM_NAME);
+            String label = customName == null ? null : customName.getString();
+            neural = new NeuralComputer((ServerWorld)owner.getEntityWorld(), owner.getBlockPos(), computerId, label);
             neural.readModuleData(nbt.getCompound(MODULE_DATA));
 
             nbt.putInt(SESSION_ID, sessionId);
             nbt.putUuid(INSTANCE_ID, neural.register());
             nbt.putInt(COMPUTER_ID, computerId);
+            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
 
             neural.turnOn();
             slot.inventory().markDirty();
@@ -76,8 +77,10 @@ public class NeuralComputerHandler {
     }
 
     public static NeuralComputer tryGetServer(@Nonnull ItemStack stack, LivingEntity player) {
-        NbtCompound nbt = stack.getNbt();
-        if(nbt == null || !nbt.contains(SESSION_ID) || !nbt.containsUuid(INSTANCE_ID)) return null;
+        NbtComponent component = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if(component == null) return null;
+        NbtCompound nbt = component.copyNbt();
+        if(!nbt.contains(SESSION_ID) || !nbt.containsUuid(INSTANCE_ID)) return null;
 
         final ServerComputerRegistry manager = ServerContext.get(Objects.requireNonNull(player.getServer())).registry();
         var computer = manager.get(nbt.getInt(SESSION_ID), nbt.getUuid(INSTANCE_ID));

@@ -32,7 +32,7 @@ class LaserModuleItem(settings: Settings) : ModuleItem("laser", settings), IModu
   override fun getModule(): Identifier = PlethoraModules.LASER_M
 
   override fun getUseAction(stack: ItemStack): UseAction = UseAction.BOW
-  override fun getMaxUseTime(stack: ItemStack) = MAX_TICKS
+  override fun getMaxUseTime(stack: ItemStack, user: LivingEntity) = MAX_TICKS
 
   override fun use(world: World, player: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
     val stack = player.getStackInHand(hand)

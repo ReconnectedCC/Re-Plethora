@@ -1,34 +1,37 @@
 package io.sc3.plethora.gameplay.data.recipes
 
-import com.google.gson.JsonObject
-import dan200.computercraft.shared.computer.items.IComputerItem
-import dan200.computercraft.shared.computer.recipe.ComputerConvertRecipe
+import dan200.computercraft.api.media.IMedia
+import dan200.computercraft.shared.ModRegistry
 import dan200.computercraft.shared.pocket.items.PocketComputerItem
+import dan200.computercraft.shared.recipe.CustomShapedRecipe
 import dan200.computercraft.shared.recipe.ShapedRecipeSpec
 import io.sc3.plethora.gameplay.neural.NeuralComputerHandler
 import io.sc3.plethora.gameplay.neural.NeuralHelpers
 import io.sc3.plethora.gameplay.neural.NeuralInterfaceInventory
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.inventory.Inventories
 import net.minecraft.item.ItemStack
-import net.minecraft.network.PacketByteBuf
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.recipe.RecipeSerializer
+import net.minecraft.recipe.input.CraftingRecipeInput
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 class NeuralInterfaceRecipe(
-  id: Identifier,
   recipe: ShapedRecipeSpec
-) : ComputerConvertRecipe(id, recipe) {
-  private val output = recipe.result.item
+) : CustomShapedRecipe(recipe) {
+  private val output = recipe.result().item
 
-  override fun convert(item: IComputerItem, old: ItemStack): ItemStack {
+  override fun craft(input: CraftingRecipeInput, registries: RegistryWrapper.WrapperLookup): ItemStack {
+    val old = input.stacks.firstOrNull { it.item is IMedia } ?: return super.craft(input, registries)
+    val item = old.item as IMedia
     val result = ItemStack(output)
-    val id = item.getComputerID(old)
-    val label = item.getLabel(old)
+    val id = old.get(ModRegistry.DataComponents.COMPUTER_ID.get())?.id() ?: -1
+    val label = item.getLabel(registries, old)
 
-    // Copy across key properties
-    val nbt = result.orCreateNbt
-    if (!label.isNullOrEmpty()) result.setCustomName(Text.of(label))
+    val nbt = NbtCompound()
+    if (!label.isNullOrEmpty()) result.set(DataComponentTypes.CUSTOM_NAME, Text.of(label))
     if (id >= 0) nbt.putInt(NeuralComputerHandler.COMPUTER_ID, id)
 
     // Forge/1.12.2 Plethora does not check if the source pocket computer has an upgrade, but I feel like it would kinda
@@ -41,20 +44,17 @@ class NeuralInterfaceRecipe(
         val neuralInv = NeuralInterfaceInventory(result)
         neuralInv.setStack(NeuralHelpers.BACK, upgradeStack)
 
-        // Write the new inventory to our output's NBT
-        Inventories.writeNbt(nbt, neuralInv.ownStacks)
+        Inventories.writeNbt(nbt, neuralInv.ownStacks, registries)
       }
     }
 
+    if (!nbt.isEmpty) result.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt))
     return result
   }
 
   override fun getSerializer() = Serializer
 
-  object Serializer : RecipeSerializer<NeuralInterfaceRecipe> {
-    private fun make(id: Identifier, spec: ShapedRecipeSpec) = NeuralInterfaceRecipe(id, spec)
-    override fun read(id: Identifier, json: JsonObject) = make(id, ShapedRecipeSpec.fromJson(json))
-    override fun read(id: Identifier, buf: PacketByteBuf) = make(id, ShapedRecipeSpec.fromNetwork(buf))
-    override fun write(buf: PacketByteBuf, recipe: NeuralInterfaceRecipe) = recipe.toSpec().toNetwork(buf)
+  companion object {
+    val Serializer: RecipeSerializer<NeuralInterfaceRecipe> = serialiser(::NeuralInterfaceRecipe)
   }
 }

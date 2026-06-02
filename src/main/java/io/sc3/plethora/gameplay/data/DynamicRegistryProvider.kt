@@ -1,5 +1,7 @@
 package io.sc3.plethora.gameplay.data
 
+import dan200.computercraft.api.pocket.IPocketUpgrade
+import dan200.computercraft.api.turtle.ITurtleUpgrade
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider
 import net.minecraft.registry.RegistryKeys
@@ -14,5 +16,7 @@ class DynamicRegistryProvider(
 
   override fun configure(registries: RegistryWrapper.WrapperLookup, entries: Entries) {
     entries.addAll(registries.getWrapperOrThrow(RegistryKeys.DAMAGE_TYPE))
+    entries.addAll(registries.getWrapperOrThrow(ITurtleUpgrade.REGISTRY))
+    entries.addAll(registries.getWrapperOrThrow(IPocketUpgrade.REGISTRY))
   }
 }

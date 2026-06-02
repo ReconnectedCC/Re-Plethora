@@ -1,6 +1,7 @@
 package io.sc3.plethora.gameplay.modules.kinetic;
 
 import dan200.computercraft.api.turtle.*;
+import dan200.computercraft.api.upgrades.UpgradeType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
@@ -13,6 +14,7 @@ import io.sc3.plethora.core.TurtleUpgradeModule;
 import io.sc3.plethora.gameplay.PlethoraFakePlayer;
 import io.sc3.plethora.integration.PlayerInteractionHelpers;
 import io.sc3.plethora.integration.computercraft.TurtleFakePlayerProvider;
+import io.sc3.plethora.gameplay.registry.Registration;
 import io.sc3.plethora.util.PlayerHelpers;
 
 import javax.annotation.Nonnull;
@@ -24,7 +26,13 @@ public class KineticTurtleUpgrade extends TurtleUpgradeModule {
 
     @Nonnull
     @Override
-    public TurtleUpgradeType getType() {
+    public UpgradeType<? extends ITurtleUpgrade> getType() {
+        return Registration.ModTurtleUpgradeTypes.KINETIC_AUGMENT;
+    }
+
+    @Nonnull
+    @Override
+    public TurtleUpgradeType getUpgradeType() {
         return TurtleUpgradeType.BOTH;
     }
 

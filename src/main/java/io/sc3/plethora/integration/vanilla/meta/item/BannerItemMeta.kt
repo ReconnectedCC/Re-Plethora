@@ -1,41 +1,24 @@
 package io.sc3.plethora.integration.vanilla.meta.item
 
-import io.sc3.plethora.api.meta.ItemStackMetaProvider
-import net.minecraft.block.entity.BannerPattern
-import net.minecraft.item.BannerItem
+import io.sc3.plethora.api.meta.BasicMetaProvider
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtElement
-import net.minecraft.registry.Registries.BANNER_PATTERN
-import net.minecraft.util.DyeColor
 
-object BannerItemMeta : ItemStackMetaProvider<BannerItem>(BannerItem::class.java) {
-  override fun getMeta(stack: ItemStack, item: BannerItem): Map<String, *> {
-    val nbt = stack.getSubNbt("BlockEntityTag")
-    val banner = if (nbt != null && nbt.contains("Patterns")) {
-      val list = nbt.getList("Patterns", NbtElement.COMPOUND_TYPE.toInt())
+object BannerItemMeta : BasicMetaProvider<ItemStack>() {
+  override fun getMeta(target: ItemStack): Map<String, *> {
+    val patterns = target.get(DataComponentTypes.BANNER_PATTERNS) ?: return emptyMap<String, Any>()
 
-      val out = mutableListOf<Map<String, Any>>()
-      for (i in 0 until list.size.coerceAtMost(6)) {
-        val patternNbt = list.getCompound(i)
-        val color = DyeColor.byId(patternNbt.getInt("Color"))
-        val pattern = getPatternById(patternNbt.getString("Pattern"))
-        if (pattern != null) {
-          out.add(mapOf(
-            "id" to pattern.id,
-            "name" to pattern.id, // TODO: This has changed
-            "colour" to color.getName(),
-            "color" to color.getName()
-          ))
-        }
-      }
-      out
-    } else {
-      emptyList()
+    val banner = patterns.layers().take(6).mapNotNull { layer ->
+      val id = layer.pattern().key.orElse(null)?.value?.toString() ?: return@mapNotNull null
+      val colour = layer.color().getName()
+      mapOf(
+        "id" to id,
+        "name" to id,
+        "colour" to colour,
+        "color" to colour
+      )
     }
 
     return mapOf("banner" to banner)
   }
-
-  private fun getPatternById(id: String): BannerPattern? =
-    BANNER_PATTERN.find { it.id == id }
 }

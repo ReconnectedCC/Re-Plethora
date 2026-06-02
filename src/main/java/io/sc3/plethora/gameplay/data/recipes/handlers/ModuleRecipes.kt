@@ -5,13 +5,16 @@ import io.sc3.library.recipe.BetterComplexRecipeJsonBuilder
 import io.sc3.library.recipe.IngredientBrew
 import io.sc3.library.recipe.IngredientEnchanted
 import io.sc3.library.recipe.RecipeHandler
+import io.sc3.library.recipe.offerTo
 import io.sc3.plethora.Plethora.ModId
-import io.sc3.plethora.gameplay.data.recipes.*
+import io.sc3.plethora.gameplay.data.recipes.ScannerModuleUpgradeRecipe
+import io.sc3.plethora.gameplay.data.recipes.SensorModuleUpgradeRecipe
+import io.sc3.plethora.gameplay.data.recipes.inventoryChange
 import io.sc3.plethora.gameplay.registry.Registration.ModItems
 import net.fabricmc.fabric.api.recipe.v1.ingredient.DefaultCustomIngredients
 import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags
 import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder
-import net.minecraft.data.server.recipe.RecipeJsonProvider
+import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.data.server.recipe.RecipeProvider
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
 import net.minecraft.enchantment.Enchantments
@@ -19,9 +22,9 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Items
 import net.minecraft.potion.Potions
 import net.minecraft.recipe.book.RecipeCategory
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.Registries.RECIPE_SERIALIZER
 import net.minecraft.registry.Registry.register
-import java.util.function.Consumer
 
 object ModuleRecipes : RecipeHandler {
   override fun registerSerializers() {
@@ -29,7 +32,7 @@ object ModuleRecipes : RecipeHandler {
     register(RECIPE_SERIALIZER, ModId("sensor_module_upgrade"), SensorModuleUpgradeRecipe.recipeSerializer)
   }
 
-  override fun generateRecipes(exporter: Consumer<RecipeJsonProvider>) {
+  override fun generateRecipes(exporter: RecipeExporter, registries: RegistryWrapper.WrapperLookup) {
     // Overlay Glasses
     ShapedRecipeJsonBuilder
       .create(RecipeCategory.MISC, ModItems.GLASSES_MODULE)
@@ -102,7 +105,7 @@ object ModuleRecipes : RecipeHandler {
       .input('R', ConventionalItemTags.REDSTONE_DUSTS)
       .input('G', ConventionalItemTags.GOLD_INGOTS)
       .input('P', Items.PISTON)
-      .input('B', IngredientBrew(StatusEffects.JUMP_BOOST, Potions.LEAPING).toVanilla())
+      .input('B', IngredientBrew(StatusEffects.JUMP_BOOST.value(), Potions.LEAPING).toVanilla())
       .hasModuleHandler()
       .offerTo(exporter)
 
@@ -125,11 +128,11 @@ object ModuleRecipes : RecipeHandler {
       .offerTo(exporter)
 
     // Module Upgrades
-    BetterComplexRecipeJsonBuilder(ModItems.SCANNER_MODULE, ScannerModuleUpgradeRecipe.recipeSerializer)
+    BetterComplexRecipeJsonBuilder<ScannerModuleUpgradeRecipe>(ModItems.SCANNER_MODULE, ScannerModuleUpgradeRecipe())
       .criterion("has_scanner", RecipeProvider.conditionsFromItem(ModItems.SCANNER_MODULE))
       .offerTo(exporter, ModId("scanner_module_upgrade"))
 
-    BetterComplexRecipeJsonBuilder(ModItems.SENSOR_MODULE, SensorModuleUpgradeRecipe.recipeSerializer)
+    BetterComplexRecipeJsonBuilder<SensorModuleUpgradeRecipe>(ModItems.SENSOR_MODULE, SensorModuleUpgradeRecipe())
       .criterion("has_sensor", RecipeProvider.conditionsFromItem(ModItems.SENSOR_MODULE))
       .offerTo(exporter, ModId("sensor_module_upgrade"))
   }

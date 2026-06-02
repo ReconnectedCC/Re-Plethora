@@ -40,18 +40,16 @@ class Dot2d(
     val delta = scale / 2
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
 
-    buffer.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
+    buffer.vertex(matrix, x - delta, y - delta, 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, x - delta, y + delta, 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, x + delta, y + delta, 0f).color(red, green, blue, alpha)
 
-    buffer.vertex(matrix, x - delta, y - delta, 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, x - delta, y + delta, 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, x + delta, y + delta, 0f).color(red, green, blue, alpha).next()
-
-    buffer.vertex(matrix, x - delta, y - delta, 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, x + delta, y + delta, 0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, x + delta, y - delta, 0f).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, x - delta, y - delta, 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, x + delta, y + delta, 0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, x + delta, y - delta, 0f).color(red, green, blue, alpha)
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())
   }

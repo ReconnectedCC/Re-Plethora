@@ -156,6 +156,5 @@ class SquidFeatureRenderer(
       .overlay(OverlayTexture.DEFAULT_UV)
       .light(light)
       .normal(0.0f, 0.0f, 1.0f)
-      .next()
   }
 }

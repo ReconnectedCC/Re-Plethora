@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "c:diamonds"
+    },
+    "F": {
+      "fabric:type": "fabric:any",
+      "ingredients": [
+        {
+          "fabric:type": "sc-library:enchantment",
+          "enchantment": "minecraft:flame",
+          "minLevel": 1
+        },
+        {
+          "fabric:type": "sc-library:enchantment",
+          "enchantment": "minecraft:fire_aspect",
+          "minLevel": 1
+        }
+      ]
+    },
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "I": {
+      "tag": "c:iron_ingots"
+    }
+  },
+  "pattern": [
+    "III",
+    "GDF",
+    "  I"
+  ],
+  "result": {
+    "count": 1,
+    "id": "plethora:module_laser"
+  }
+}

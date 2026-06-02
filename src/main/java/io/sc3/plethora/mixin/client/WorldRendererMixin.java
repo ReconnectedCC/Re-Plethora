@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
@@ -23,17 +24,19 @@ public class WorldRendererMixin {
 
   @Inject(method = "render", at = @At("TAIL"))
   private void render(
-    MatrixStack matrices,
-    float tickDelta,
-    long limitTime,
+    RenderTickCounter tickCounter,
     boolean renderBlockOutline,
     Camera camera,
     GameRenderer gameRenderer,
     LightmapTextureManager lightmapTextureManager,
     Matrix4f positionMatrix,
+    Matrix4f projectionMatrix,
     CallbackInfo ci
   ) {
     this.client.getProfiler().swap("plethora:renderOverlay");
+    MatrixStack matrices = new MatrixStack();
+    matrices.multiplyPositionMatrix(positionMatrix);
+    float tickDelta = tickCounter.getTickDelta(true);
     OverlayRenderer.renderOverlay(this.client, matrices, tickDelta, camera);
   }
 }

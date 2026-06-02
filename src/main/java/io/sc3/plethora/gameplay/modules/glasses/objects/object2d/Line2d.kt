@@ -65,14 +65,13 @@ class Line2d(
     setupFlat()
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
     val normal = matrices.peek().normalMatrix
 
     // OpenGL has some limitations on normal lines, so we instead will create a quad,
     // and use two triangles to "build" the quad.
     RenderSystem.setShader(GameRenderer::getPositionColorProgram)
-    buffer.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR)
 
     // Calculate thickness and the perpendicular direction to do it in.
     val dx = (end.y - start.y).toFloat()
@@ -95,14 +94,14 @@ class Line2d(
     val y4 = end.y.toFloat() + offsetY
 
     // First Triangle: x1/y1 -> x2/y2 -> x3/y3
-    buffer.vertex(matrix, x1, y1, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
-    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
-    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x1, y1, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
+    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
+    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
 
     // Second Triangle: x3/y3 -> x2/y2 -> x4/y4
-    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
-    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
-    buffer.vertex(matrix, x4, y4, 0f).color(red, green, blue, alpha).normal(normal, 0f, 1f, 0f).next()
+    buffer.vertex(matrix, x3, y3, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
+    buffer.vertex(matrix, x2, y2, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
+    buffer.vertex(matrix, x4, y4, 0f).color(red, green, blue, alpha).normal(0f, 1f, 0f)
 
     BufferRenderer.drawWithGlobalProgram(buffer.end())
   }

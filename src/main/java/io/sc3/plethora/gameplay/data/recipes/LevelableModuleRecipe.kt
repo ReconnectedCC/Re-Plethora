@@ -1,34 +1,35 @@
 package io.sc3.plethora.gameplay.data.recipes
 
 import io.sc3.plethora.gameplay.modules.LevelableModuleItem
-import net.minecraft.inventory.RecipeInputInventory
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.Ingredient.ofItems
 import net.minecraft.recipe.ShapelessRecipe
 import net.minecraft.recipe.book.CraftingRecipeCategory
-import net.minecraft.registry.DynamicRegistryManager
-import net.minecraft.util.Identifier
+import net.minecraft.recipe.input.CraftingRecipeInput
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.util.collection.DefaultedList
 
 abstract class LevelableModuleRecipe(
-  id: Identifier,
   category: CraftingRecipeCategory = CraftingRecipeCategory.MISC,
   val module: LevelableModuleItem
 ) : ShapelessRecipe(
-  id, "", category, ItemStack(module), DefaultedList.copyOf(
+  "", category, ItemStack(module), DefaultedList.copyOf(
     Ingredient.EMPTY, // Defaulted item
     ofItems(module), // Module to be upgraded
     ofItems(Items.NETHER_STAR),
     ofItems(Items.NETHERITE_INGOT)
   )
 ) {
-  override fun craft(inv: RecipeInputInventory, manager: DynamicRegistryManager): ItemStack {
-    val output = getOutput(manager)
+  override fun craft(inv: CraftingRecipeInput, manager: RegistryWrapper.WrapperLookup): ItemStack {
+    val output = getResult(manager)
 
-    for (i in 0 until inv.size()) {
-      val stack: ItemStack = inv.getStack(i)
+    for (i in 0 until inv.size) {
+      val stack: ItemStack = inv.getStackInSlot(i)
       if (stack.item !is LevelableModuleItem || stack.item !== output.item) {
         continue
       }
@@ -43,8 +44,9 @@ abstract class LevelableModuleRecipe(
       if (oldRange == newRange) return ItemStack.EMPTY
 
       // Increment the level by updating the NBT of the result item
-      val tag = result.orCreateNbt
+      val tag = result.get(DataComponentTypes.CUSTOM_DATA)?.copyNbt() ?: NbtCompound()
       tag.putInt("level", oldLevel + 1)
+      result.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(tag))
       return result
     }
 

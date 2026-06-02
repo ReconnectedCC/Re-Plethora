@@ -10,7 +10,8 @@
     "Desolestice",
     "Dimaguy",
     "AlexDevs",
-    "EmmaKnijn"
+    "EmmaKnijn",
+    "qrmcat"
   ],
   "contact": {
     "website": "https://plethora.madefor.cc",
@@ -50,11 +51,11 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_target_version}",
-    "java": ">=17",
+    "java": ">=21",
     "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "computercraft": "${cc_target_version}",
     "sc-library": "1.x",
-    "trinkets": ">=3.7.0"
+    "trinkets": ">=3.10.0"
   },
   "custom": {
     "cardinal-components": [

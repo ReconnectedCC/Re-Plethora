@@ -29,7 +29,7 @@ class NeuralInterfaceTrinketRenderer : TrinketRenderer {
 
     val consumer = vertexConsumers.getBuffer(model.getLayer(tex))
     if (!isVisible(entity)) return
-    model.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV, 1f, 1f, 1f, 1f)
+    model.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV, -1)
   }
 
   fun isVisible(entity: LivingEntity): Boolean {

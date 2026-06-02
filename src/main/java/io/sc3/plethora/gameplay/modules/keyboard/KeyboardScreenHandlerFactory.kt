@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
@@ -22,7 +23,13 @@ class KeyboardScreenHandlerFactory(
   override fun getDisplayName() = name
 
   override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler =
-    ComputerMenuWithoutInventory(KEYBOARD_HANDLER_TYPE, syncId, inv, ::canUse, computer)
+    ComputerMenuWithoutInventory(
+      KEYBOARD_HANDLER_TYPE as ScreenHandlerType<out ComputerMenuWithoutInventory>,
+      syncId,
+      inv,
+      ::canUse,
+      computer
+    )
 
   private fun canUse(player: PlayerEntity): Boolean {
     if (!player.isAlive) return false
@@ -34,7 +41,7 @@ class KeyboardScreenHandlerFactory(
     val registry = ServerContext.get(world.server).registry()
 
     // Ensure the computer still exists
-    val newComputer = registry.get(computer.instanceID)
+    val newComputer = registry.get(computer.instanceUUID)
     if (newComputer != computer) return false
 
     // Find the computer in the world, and perform the same canUseKeyboard check on its (new?) block entity. This allows

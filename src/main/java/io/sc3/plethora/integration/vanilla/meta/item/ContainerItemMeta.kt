@@ -1,36 +1,25 @@
 package io.sc3.plethora.integration.vanilla.meta.item
 
-import io.sc3.plethora.api.meta.ItemStackMetaProvider
-import net.minecraft.item.BlockItem
+import io.sc3.plethora.api.meta.BasicMetaProvider
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.Registries
 
-
-object ContainerItemMeta : ItemStackMetaProvider<BlockItem>(BlockItem::class.java) {
-
-  override fun getMeta(stack: ItemStack, item: BlockItem): MutableMap<String, *> {
-    val data = mutableMapOf<String, Any>()
-
-    val tag = stack.getSubNbt("BlockEntityTag") ?: return data
-    if (!tag.contains("Items", NbtCompound.LIST_TYPE.toInt())) return data
-
-    val items = tag.getList("Items", NbtCompound.COMPOUND_TYPE.toInt())
-
+object ContainerItemMeta : BasicMetaProvider<ItemStack>() {
+  override fun getMeta(target: ItemStack): Map<String, *> {
+    val container = target.get(DataComponentTypes.CONTAINER) ?: return emptyMap<String, Any>()
 
     val list = mutableMapOf<Int, Map<String, Any>>()
-
-    for (element in items) {
-      val itemTag = element as NbtCompound
-      val slot = itemTag.getByte("Slot").toInt() + 1
-
-      list[slot] = mapOf(
-        "name" to itemTag.getString("id"),
-        "count" to itemTag.getByte("Count").toInt()
-      )
+    container.stream().toList().forEachIndexed { index, stack ->
+      if (!stack.isEmpty) {
+        list[index + 1] = mapOf(
+          "name" to Registries.ITEM.getId(stack.item).toString(),
+          "count" to stack.count
+        )
+      }
     }
 
-    data["list"] = list
-    return data
+    if (list.isEmpty()) return emptyMap<String, Any>()
+    return mapOf("list" to list)
   }
 }
-

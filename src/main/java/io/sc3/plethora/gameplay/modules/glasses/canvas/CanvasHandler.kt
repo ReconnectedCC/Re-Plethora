@@ -41,14 +41,14 @@ object CanvasHandler {
   fun addServer(canvas: CanvasServer) {
     synchronized(server) {
       server.add(canvas)
-      canvas.makeAddPacket()?.let { ServerPlayNetworking.send(canvas.player, CanvasAddPacket.id, it.toBytes()) }
+      canvas.makeAddPacket()?.let { ServerPlayNetworking.send(canvas.player, it) }
     }
   }
 
   fun removeServer(canvas: CanvasServer) {
     synchronized(server) {
       server.remove(canvas)
-      canvas.makeRemovePacket()?.let { ServerPlayNetworking.send(canvas.player, CanvasRemovePacket.id, it.toBytes()) }
+      canvas.makeRemovePacket()?.let { ServerPlayNetworking.send(canvas.player, it) }
     }
   }
 
@@ -77,7 +77,7 @@ object CanvasHandler {
       for (canvas in server) {
         canvas.makeUpdatePacket()?.let {
           try {
-            ServerPlayNetworking.send(canvas.player, CanvasUpdatePacket.id, it.toBytes())
+            ServerPlayNetworking.send(canvas.player, it)
           } catch (e: Exception) {
             Plethora.log.error("Error sending canvas update packet", e)
           }
@@ -94,7 +94,7 @@ object CanvasHandler {
     if (optStack.isEmpty) return null
     val stack = optStack.get()
 
-    val nbt = stack.nbt
+    val nbt = stack.get(net.minecraft.component.DataComponentTypes.CUSTOM_DATA)?.copyNbt()
     if (nbt == null || !nbt.contains(MODULE_DATA, COMPOUND_TYPE.toInt())) return null
 
     val modules = nbt.getCompound(MODULE_DATA)

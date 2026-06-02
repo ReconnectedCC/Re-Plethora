@@ -2,8 +2,9 @@ package io.sc3.plethora.gameplay.registry;
 
 import dan200.computercraft.api.detail.VanillaDetailRegistries;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
-import dan200.computercraft.api.pocket.PocketUpgradeSerialiser;
-import dan200.computercraft.api.turtle.TurtleUpgradeSerialiser;
+import dan200.computercraft.api.pocket.IPocketUpgrade;
+import dan200.computercraft.api.turtle.ITurtleUpgrade;
+import dan200.computercraft.api.upgrades.UpgradeType;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
 import io.sc3.plethora.Plethora;
@@ -19,8 +20,12 @@ import io.sc3.plethora.gameplay.manipulator.ManipulatorPeripheral;
 import io.sc3.plethora.gameplay.manipulator.ManipulatorType;
 import io.sc3.plethora.gameplay.modules.glasses.GlassesModuleItem;
 import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasHandler;
+import io.sc3.plethora.gameplay.modules.glasses.networking.CanvasAddPacket;
+import io.sc3.plethora.gameplay.modules.glasses.networking.CanvasRemovePacket;
+import io.sc3.plethora.gameplay.modules.glasses.networking.CanvasUpdatePacket;
 import io.sc3.plethora.gameplay.modules.introspection.IntrospectionModuleItem;
 import io.sc3.plethora.gameplay.modules.keyboard.KeyboardKeyPacket;
+import io.sc3.plethora.gameplay.modules.keyboard.KeyboardListenPacket;
 import io.sc3.plethora.gameplay.modules.keyboard.KeyboardModuleItem;
 import io.sc3.plethora.gameplay.modules.keyboard.ServerKeyListener;
 import io.sc3.plethora.gameplay.modules.kinetic.KineticModuleItem;
@@ -43,6 +48,7 @@ import io.sc3.plethora.integration.vanilla.registry.VanillaMethodRegistration;
 import io.sc3.plethora.integration.vanilla.registry.VanillaPeripheralRegistration;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
@@ -51,7 +57,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.enums.Instrument;
+import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -81,7 +87,7 @@ public final class Registration {
 
   public static final EntityType<LaserEntity> LASER_ENTITY = Registry.register(
     Registries.ENTITY_TYPE,
-    new Identifier(Plethora.MOD_ID, "laser"),
+    Identifier.of(Plethora.MOD_ID, "laser"),
     FabricEntityTypeBuilder.<LaserEntity>create(SpawnGroup.MISC, LaserEntity::new)
       .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
       .trackRangeBlocks(4).trackedUpdateRate(10)
@@ -102,15 +108,15 @@ public final class Registration {
       ModBlocks.MANIPULATOR_MARK_1,
       ModItems.NEURAL_CONNECTOR,
       ModScreens.NEURAL_INTERFACE_HANDLER_TYPE,
-      ModTurtleUpgradeSerialisers.MODULE,
-      ModPocketUpgradeSerialisers.MODULE,
+      ModTurtleUpgradeTypes.MODULE,
+      ModPocketUpgradeTypes.MODULE,
       ModDamageSources.LASER,
     };
     log.trace("oh no:" + (o[0] != null ? "yes" : "NullPointerException")); // lig was here
 
-    Registry.register(Registries.SCREEN_HANDLER, new Identifier(Plethora.MOD_ID, "neural_interface"),
+    Registry.register(Registries.SCREEN_HANDLER, Identifier.of(Plethora.MOD_ID, "neural_interface"),
       ModScreens.NEURAL_INTERFACE_HANDLER_TYPE);
-    Registry.register(Registries.SCREEN_HANDLER, new Identifier(Plethora.MOD_ID, "keyboard"),
+    Registry.register(Registries.SCREEN_HANDLER, Identifier.of(Plethora.MOD_ID, "keyboard"),
       ModScreens.KEYBOARD_HANDLER_TYPE);
 
     PlethoraEvents.REGISTER.register(api -> {
@@ -146,7 +152,12 @@ public final class Registration {
       if (blockEntity instanceof BaseBlockEntity base) base.onChunkUnloaded();
     });
 
-    registerServerReceiver(KeyboardKeyPacket.id, KeyboardKeyPacket::fromBytes);
+    PayloadTypeRegistry.playS2C().register(CanvasAddPacket.id, CanvasAddPacket.codec);
+    PayloadTypeRegistry.playS2C().register(CanvasRemovePacket.id, CanvasRemovePacket.codec);
+    PayloadTypeRegistry.playS2C().register(CanvasUpdatePacket.id, CanvasUpdatePacket.codec);
+    PayloadTypeRegistry.playS2C().register(KeyboardListenPacket.id, KeyboardListenPacket.codec);
+    PayloadTypeRegistry.playC2S().register(KeyboardKeyPacket.id, KeyboardKeyPacket.codec);
+    registerServerReceiver(KeyboardKeyPacket.id);
 
     CanvasHandler.registerServerEvents();
     ServerKeyListener.registerEvents();
@@ -178,7 +189,7 @@ public final class Registration {
     public static final BlockItem MANIPULATOR_MARK_2 = ofBlock(ModBlocks.MANIPULATOR_MARK_2, BlockItem::new);
 
     public static final RegistryKey<ItemGroup> PLETHORA_ITEM_GROUP =
-      RegistryKey.of(RegistryKeys.ITEM_GROUP, new Identifier(Plethora.MOD_ID, "main"));
+      RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(Plethora.MOD_ID, "main"));
 
     private static Item.Settings properties() {
       return new Item.Settings();
@@ -191,7 +202,7 @@ public final class Registration {
     }
 
     private static <T extends Item> T register(String id, T item) {
-      var i = Registry.register(ITEM, new Identifier(Plethora.MOD_ID, id), item);
+      var i = Registry.register(ITEM, Identifier.of(Plethora.MOD_ID, id), item);
       items.add(i);
       return i;
     }
@@ -208,13 +219,13 @@ public final class Registration {
       new ManipulatorBlock(properties().nonOpaque(), ManipulatorType.MARK_2));
 
     private static <T extends Block> T register(String id, T value) {
-      return Registry.register(BLOCK, new Identifier(Plethora.MOD_ID, id), value);
+      return Registry.register(BLOCK, Identifier.of(Plethora.MOD_ID, id), value);
     }
 
     private static Block.Settings properties() {
       return Block.Settings.create()
         .mapColor(MapColor.STONE_GRAY)
-        .instrument(Instrument.BASEDRUM)
+        .instrument(NoteBlockInstrument.BASEDRUM)
         .strength(2.0F)
         .requiresTool();
     }
@@ -233,58 +244,58 @@ public final class Registration {
     private static <T extends BlockEntity> BlockEntityType<T> ofBlock(Block block, String id,
                                       BiFunction<BlockPos, BlockState, T> factory) {
       BlockEntityType<T> blockEntityType = FabricBlockEntityTypeBuilder.create(factory::apply, block).build();
-      return Registry.register(BLOCK_ENTITY_TYPE, new Identifier(Plethora.MOD_ID, id), blockEntityType);
+      return Registry.register(BLOCK_ENTITY_TYPE, Identifier.of(Plethora.MOD_ID, id), blockEntityType);
     }
   }
 
   public static final class ModScreens {
-    public static final ExtendedScreenHandlerType<NeuralInterfaceScreenHandler> NEURAL_INTERFACE_HANDLER_TYPE =
-      new ExtendedScreenHandlerType<>(NeuralInterfaceScreenFactory::fromPacket);
+    public static final ExtendedScreenHandlerType<NeuralInterfaceScreenHandler, ComputerContainerData> NEURAL_INTERFACE_HANDLER_TYPE =
+      new ExtendedScreenHandlerType<>(NeuralInterfaceScreenFactory::fromPacket, ComputerContainerData.STREAM_CODEC);
 
-    public static final ExtendedScreenHandlerType<ComputerMenuWithoutInventory> KEYBOARD_HANDLER_TYPE =
+    public static final ExtendedScreenHandlerType<ComputerMenuWithoutInventory, ComputerContainerData> KEYBOARD_HANDLER_TYPE =
       new ExtendedScreenHandlerType<>((id, inv, data) ->
-        new ComputerMenuWithoutInventory(ModScreens.KEYBOARD_HANDLER_TYPE, id, inv, new ComputerContainerData(data)));
+        new ComputerMenuWithoutInventory(ModScreens.KEYBOARD_HANDLER_TYPE, id, inv, data), ComputerContainerData.STREAM_CODEC);
   }
 
-  public static final class ModTurtleUpgradeSerialisers {
-    private static <T extends TurtleUpgradeSerialiser<?>> T register(Identifier name, T serialiser) {
+  public static final class ModTurtleUpgradeTypes {
+    private static <T extends ITurtleUpgrade> UpgradeType<T> register(Identifier name, UpgradeType<T> type) {
       @SuppressWarnings("unchecked")
-      var registry = (Registry<? super TurtleUpgradeSerialiser<?>>) REGISTRIES.get(TurtleUpgradeSerialiser.registryId().getValue());
+      var registry = (Registry<? super UpgradeType<? extends ITurtleUpgrade>>) REGISTRIES.get(ITurtleUpgrade.typeRegistry().getValue());
       if (registry == null) throw new IllegalStateException("ComputerCraft has not initialised yet?");
-      Registry.register(registry, name, serialiser);
-      return serialiser;
+      Registry.register(registry, name, type);
+      return type;
     }
 
-    public static final TurtleUpgradeSerialiser<TurtleUpgradeModule> MODULE = register(
-      new Identifier(Plethora.MOD_ID, "module"),
-      TurtleUpgradeSerialiser.simpleWithCustomItem((id, item) ->
+    public static final UpgradeType<TurtleUpgradeModule> MODULE = register(
+      Identifier.of(Plethora.MOD_ID, "module"),
+      UpgradeType.simpleWithCustomItem(item ->
         new TurtleUpgradeModule(item, (IModuleHandler) item.getItem(), item.getTranslationKey() + ".adjective"))
     );
 
-    public static final TurtleUpgradeSerialiser<KineticTurtleUpgrade> KINETIC_AUGMENT = register(
+    public static final UpgradeType<KineticTurtleUpgrade> KINETIC_AUGMENT = register(
       ModItems.KINETIC_MODULE.getModule(),
-      TurtleUpgradeSerialiser.simpleWithCustomItem((id, item) ->
+      UpgradeType.simpleWithCustomItem(item ->
         new KineticTurtleUpgrade(item, ModItems.KINETIC_MODULE, item.getTranslationKey() + ".adjective"))
     );
   }
 
-  public static final class ModPocketUpgradeSerialisers {
-    private static <T extends PocketUpgradeSerialiser<?>> T register(Identifier name, T serialiser) {
+  public static final class ModPocketUpgradeTypes {
+    private static <T extends IPocketUpgrade> UpgradeType<T> register(Identifier name, UpgradeType<T> type) {
       @SuppressWarnings("unchecked")
-      var registry = (Registry<? super PocketUpgradeSerialiser<?>>) REGISTRIES.get(PocketUpgradeSerialiser.registryId().getValue());
+      var registry = (Registry<? super UpgradeType<? extends IPocketUpgrade>>) REGISTRIES.get(IPocketUpgrade.typeRegistry().getValue());
       if (registry == null) throw new IllegalStateException("ComputerCraft has not initialised yet?");
-      Registry.register(registry, name, serialiser);
-      return serialiser;
+      Registry.register(registry, name, type);
+      return type;
     }
 
-    public static final PocketUpgradeSerialiser<PocketUpgradeModule> MODULE = register(
-      new Identifier(Plethora.MOD_ID, "module"),
-      PocketUpgradeSerialiser.simpleWithCustomItem((id, item) -> {
-        log.info("Registering pocket module {} with crafting item {}", id, item);
+    public static final UpgradeType<PocketUpgradeModule> MODULE = register(
+      Identifier.of(Plethora.MOD_ID, "module"),
+      UpgradeType.simpleWithCustomItem(item -> {
+        log.info("Registering pocket module with crafting item {}", item);
         if (item.getItem() instanceof IModuleHandler handler) {
           return new PocketUpgradeModule(item, handler, item.getTranslationKey() + ".adjective");
         } else if (item.isEmpty()) {
-          throw new IllegalArgumentException("Cannot register a pocket module (id: " + id + ") with an empty item!");
+          throw new IllegalArgumentException("Cannot register a pocket module with an empty item!");
         } else {
           throw new IllegalArgumentException("Item " + item + " is not a valid module handler!");
         }
@@ -294,6 +305,6 @@ public final class Registration {
 
   public static final class ModDamageSources {
     public static final RegistryKey<DamageType> LASER = RegistryKey.of(RegistryKeys.DAMAGE_TYPE,
-      new Identifier(Plethora.MOD_ID, "laser"));
+      Identifier.of(Plethora.MOD_ID, "laser"));
   }
 }

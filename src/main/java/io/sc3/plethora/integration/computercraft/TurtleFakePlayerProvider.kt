@@ -54,10 +54,12 @@ object TurtleFakePlayerProvider {
 
     playerInv.markDirty()
 
-    // Add properties
+    // Add the held item's attribute modifiers (e.g. attack damage) to the fake player so its actions reflect the tool.
     val activeStack = player.getStackInHand(Hand.MAIN_HAND)
     if (!activeStack.isEmpty) {
-      player.attributes.addTemporaryModifiers(activeStack.getAttributeModifiers(EquipmentSlot.MAINHAND))
+      activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
+        player.attributes.getCustomInstance(attribute)?.addTemporaryModifier(modifier)
+      }
     }
   }
 
@@ -66,10 +68,12 @@ object TurtleFakePlayerProvider {
     val playerInv = player.inventory
     playerInv.selectedSlot = 0
 
-    // Remove properties
+    // Remove the held item's attribute modifiers that were applied in load().
     val activeStack = player.getStackInHand(Hand.MAIN_HAND)
     if (!activeStack.isEmpty) {
-      player.attributes.removeModifiers(activeStack.getAttributeModifiers(EquipmentSlot.MAINHAND))
+      activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
+        player.attributes.getCustomInstance(attribute)?.removeModifier(modifier)
+      }
     }
 
     // Copy primary items into turtle playerInv and then insert/drop the rest

@@ -1,6 +1,8 @@
 package io.sc3.plethora.gameplay.modules;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -15,8 +17,14 @@ import static net.minecraft.nbt.NbtElement.STRING_TYPE;
 
 public class ModuleContextHelpers {
     @Nullable
+    private static NbtCompound getNbt(ItemStack stack) {
+        NbtComponent component = stack.get(DataComponentTypes.CUSTOM_DATA);
+        return component == null ? null : component.copyNbt();
+    }
+
+    @Nullable
     public static UUID getUuid(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = getNbt(stack);
         if (nbt == null
             || !nbt.contains("id_lower", NUMBER_TYPE)
             || !nbt.contains("id_upper", NUMBER_TYPE)) return null;
@@ -24,21 +32,21 @@ public class ModuleContextHelpers {
     }
 
     public static GameProfile getProfile(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = getNbt(stack);
         UUID uuid = getUuid(stack);
         if (nbt == null || uuid == null) return null;
         return new GameProfile(uuid, nbt.getString("bound_name"));
     }
 
     public static Entity getEntity(MinecraftServer server, ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = getNbt(stack);
         UUID uuid = getUuid(stack);
         if (nbt == null || uuid == null) return null;
         return EntityHelpers.getEntityFromUuid(server, uuid);
     }
 
     public static String getEntityName(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
+        NbtCompound nbt = getNbt(stack);
         return nbt != null && nbt.contains("bound_name", STRING_TYPE) ? nbt.getString("bound_name") : null;
     }
 

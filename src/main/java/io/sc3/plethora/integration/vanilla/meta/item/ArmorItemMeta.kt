@@ -1,8 +1,8 @@
 package io.sc3.plethora.integration.vanilla.meta.item
 
 import io.sc3.plethora.api.meta.ItemStackMetaProvider
+import net.minecraft.component.DataComponentTypes
 import net.minecraft.item.ArmorItem
-import net.minecraft.item.DyeableArmorItem
 import net.minecraft.item.ItemStack
 
 /**
@@ -15,12 +15,10 @@ object ArmorItemMeta : ItemStackMetaProvider<ArmorItem>(ArmorItem::class.java, "
       "armorType" to item.slotType.getName()
     )
 
-    if (item is DyeableArmorItem) {
-      val color = item.getColor(stack)
-      if (color >= 0) {
-        data["color"] = color
-        data["colour"] = color
-      }
+    val dyed = stack.get(DataComponentTypes.DYED_COLOR)
+    if (dyed != null) {
+      data["color"] = dyed.rgb()
+      data["colour"] = dyed.rgb()
     }
 
     return data

@@ -10,7 +10,7 @@ public final class Helpers {
     public static final Random RANDOM = new Random();
 
     public static int hashStack(@Nonnull ItemStack stack) {
-        return Objects.hash(stack.getItem(), stack.getNbt());
+        return Objects.hash(stack.getItem(), stack.getComponentChanges());
     }
 
     public static int hashStacks(Iterable<ItemStack> stacks) {

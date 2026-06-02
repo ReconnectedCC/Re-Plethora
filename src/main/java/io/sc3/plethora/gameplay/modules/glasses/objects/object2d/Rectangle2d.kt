@@ -59,14 +59,12 @@ class Rectangle2d(
     val maxX = (minX + width).toFloat(); val maxY = (minY + height).toFloat()
 
     val matrices = ctx.matrices
-    val buffer = Tessellator.getInstance().buffer
+    val buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
     val matrix = matrices.peek().positionMatrix
-
-    buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR)
-    buffer.vertex(matrix, minX, minY, 0.0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, minX, maxY, 0.0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, maxY, 0.0f).color(red, green, blue, alpha).next()
-    buffer.vertex(matrix, maxX, minY, 0.0f).color(red, green, blue, alpha).next()
+    buffer.vertex(matrix, minX, minY, 0.0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, minX, maxY, 0.0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, maxY, 0.0f).color(red, green, blue, alpha)
+    buffer.vertex(matrix, maxX, minY, 0.0f).color(red, green, blue, alpha)
     BufferRenderer.drawWithGlobalProgram(buffer.end())
   }
 
