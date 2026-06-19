@@ -3,6 +3,7 @@ package io.sc3.plethora.integration.computercraft.meta.item
 import dan200.computercraft.api.turtle.ITurtleUpgrade
 import dan200.computercraft.api.turtle.TurtleSide
 import dan200.computercraft.api.upgrades.UpgradeData
+import dan200.computercraft.shared.ModRegistry
 import dan200.computercraft.shared.turtle.items.TurtleItem
 import io.sc3.plethora.api.meta.ItemStackMetaProvider
 import net.minecraft.component.DataComponentTypes
@@ -17,7 +18,7 @@ class TurtleItemMeta : ItemStackMetaProvider<TurtleItem>(TurtleItem::class.java,
       out["colour"] = it.rgb()
     }
 
-    out["fuel"] = TurtleItem.getFuelLevel(stack)
+    out["fuel"] = stack.get(ModRegistry.DataComponents.FUEL.get())?: 0
 
     out["left"] = getUpgrade(TurtleItem.getUpgradeWithData(stack, TurtleSide.LEFT))
     out["right"] = getUpgrade(TurtleItem.getUpgradeWithData(stack, TurtleSide.RIGHT))

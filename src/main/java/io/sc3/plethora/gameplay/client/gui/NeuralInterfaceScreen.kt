@@ -6,6 +6,7 @@ import dan200.computercraft.client.gui.widgets.ComputerSidebar
 import dan200.computercraft.client.gui.widgets.TerminalWidget
 import dan200.computercraft.client.render.RenderTypes
 import dan200.computercraft.client.render.SpriteRenderer
+import dan200.computercraft.core.util.Nullability
 import dan200.computercraft.shared.computer.core.ComputerFamily
 import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu
 import io.sc3.plethora.Plethora.ModId
@@ -56,7 +57,7 @@ class NeuralInterfaceScreen(
   }
 
   override fun createTerminal() = TerminalWidget(
-    terminalData, input,
+    terminalData, computerInput, computerActions,
     x + BORDER + AbstractComputerMenu.SIDEBAR_WIDTH,
     y + BORDER
   )
@@ -70,10 +71,18 @@ class NeuralInterfaceScreen(
       ctx.drawTexture(tex, x + NEURAL_START_X + 1, y + START_Y + 1 + S, 50, ICON_Y, 16 * 3, 16) // Middle 3
       ctx.drawTexture(tex, x + NEURAL_START_X + 1 + S, y + START_Y + 1 + 2 * S, 104, ICON_Y, 16, 16) // Bottom
     }
-
-    val spriteRenderer = SpriteRenderer.createForGui(ctx, RenderTypes.GUI_SPRITES)
-    ComputerSidebar.renderBackground(spriteRenderer, computerTextures, x, y + sidebarYOffset)
-    ctx.draw()
+    //if this goes wrong check https://github.com/cc-tweaked/CC-Tweaked/commit/9272e2efcd5a13f1796609652c1739b9d91b73fe
+/*
+    ctx.drawGuiTexture(
+      computerTextures.border(),
+      terminal.getX() - BORDER, terminal.getY() - BORDER, terminal.getWidth() + BORDER * 2, terminal.getHeight() + BORDER * 2
+    );
+ */
+    ctx.drawGuiTexture(
+      Nullability.assertNonNull(computerTextures.sidebar()),
+      x, y + sidebarYOffset, AbstractComputerMenu.SIDEBAR_WIDTH, ComputerSidebar.HEIGHT
+    );
+    //ctx.draw()
   }
 
   private fun updateVisible() {

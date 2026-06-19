@@ -68,7 +68,7 @@ class KeyboardModuleItem(settings: Settings) : ModuleItem("keyboard", settings) 
     // Check if the user has permission to use a keyboard here
     if (!canUseKeyboard(world, player, pos, blockEntity)) return PASS
 
-    PlatformHelper.get().openMenu(player, KeyboardScreenHandlerFactory(computer, stack.name, this, hand), ComputerContainerData(computer, stack))
+    PlatformHelper.get().openMenu(player, blockEntity.name,KeyboardScreenHandlerFactory(computer, stack.name, this, hand), ComputerContainerData(computer, stack))
 
     return CONSUME // Don't play an animation
   }

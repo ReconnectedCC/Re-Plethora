@@ -7,7 +7,7 @@ plugins {
   val kotlinVersion: String by System.getProperties()
   kotlin("jvm").version(kotlinVersion)
 
-  id("fabric-loom") version "1.14.+"
+  id("fabric-loom") version "1.17.+"
   id("maven-publish")
   id("signing")
   id("com.modrinth.minotaur") version "2.+"
@@ -69,12 +69,13 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.withType<KotlinCompile>().configureEach {
   compilerOptions {
     jvmTarget.set(JvmTarget.JVM_21)
-    apiVersion.set(KotlinVersion.KOTLIN_1_9)
-    languageVersion.set(KotlinVersion.KOTLIN_1_9)
+    apiVersion.set(KotlinVersion.KOTLIN_2_3)
+    languageVersion.set(KotlinVersion.KOTLIN_2_3)
   }
 }
 
 repositories {
+  mavenLocal()
   maven {
     url = uri("https://maven.reconnected.cc/releases")
     content {
@@ -157,9 +158,11 @@ dependencies {
   modImplementation(include("io.sc3", "sc-library", scLibraryVersion))
 
   // CC: Tweaked
-  modApi("cc.tweaked:cc-tweaked-$ccMcVersion-fabric:$ccVersion") {
+  modCompileOnly("cc.tweaked:cc-tweaked-$ccMcVersion-fabric:$ccVersion") {
     exclude("net.fabricmc.fabric-api", "fabric-gametest-api-v1")
   }
+
+
   runtimeOnly("com.electronwill.night-config:toml:3.6.5") // FIXME: CC:T has a broken night config dep
 
   modImplementation("dev.emi:trinkets:${trinketsVersion}")

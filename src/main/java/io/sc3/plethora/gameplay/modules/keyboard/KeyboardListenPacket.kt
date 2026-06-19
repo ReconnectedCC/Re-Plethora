@@ -10,7 +10,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 
 data class KeyboardListenPacket(val listening: Boolean): ScLibraryPacket() {
-  override fun getId(): CustomPayload.Id<KeyboardListenPacket> = id
+  override fun getId(): CustomPayload.Id<KeyboardListenPacket> = Companion.id
 
   fun toBytes(buf: PacketByteBuf) {
     buf.writeBoolean(listening)

@@ -35,7 +35,9 @@ class ManipulatorBlockEntity(
 ) : BaseBlockEntity(type, pos, state), IPlayerOwnable {
   var manipulatorType: ManipulatorType = initialType
     set(value) {
-      stacks = value.defaultStacks()
+      if (field != value) {
+        stacks = value.defaultStacks()
+      }
       field = value
     }
 
@@ -77,7 +79,7 @@ class ManipulatorBlockEntity(
 
   override fun readNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
     super.readNbt(nbt, registryLookup)
-    readDescription(nbt)
+    readDescription(nbt, registryLookup)
   }
 
   override fun writeNbt(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
@@ -121,6 +123,10 @@ class ManipulatorBlockEntity(
   }
 
   override fun readDescription(nbt: NbtCompound) {
+    readDescription(nbt, world?.registryManager ?: return)
+  }
+
+  private fun readDescription(nbt: NbtCompound, registryLookup: RegistryWrapper.WrapperLookup) {
     super.readDescription(nbt)
 
     if (nbt.contains("type", NbtElement.INT_TYPE.toInt())) {
@@ -131,7 +137,7 @@ class ManipulatorBlockEntity(
     profile = PlayerHelpers.readProfile(nbt)
     for (i in stacks.indices) {
       stacks[i] = if (nbt.contains("stack$i")) {
-        ItemStack.fromNbt(world!!.registryManager, nbt.getCompound("stack$i")).orElse(ItemStack.EMPTY)
+        ItemStack.fromNbt(registryLookup, nbt.getCompound("stack$i")).orElse(ItemStack.EMPTY)
       } else {
         ItemStack.EMPTY
       }

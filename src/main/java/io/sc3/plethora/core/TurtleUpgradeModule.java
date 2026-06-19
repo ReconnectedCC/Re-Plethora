@@ -153,7 +153,12 @@ public class TurtleUpgradeModule implements ITurtleUpgrade {
 			this.side = side;
 			location = new TurtleWorldLocation(access);
 			container = new SingletonModuleContainer(handler.getModule());
-			NbtComponent customData = access.getUpgradeData(side).get(DataComponentTypes.CUSTOM_DATA).orElse(null);
+      NbtComponent customData;
+      try {
+        customData = (NbtComponent) Objects.requireNonNull(access.getUpgradeData(side).get(DataComponentTypes.CUSTOM_DATA)).orElse(null);
+      } catch (NullPointerException e) {
+        customData = null;
+      }
 			data = customData == null ? new NbtCompound() : customData.copyNbt();
 		}
 

@@ -1,20 +1,25 @@
 package io.sc3.plethora.integration.computercraft.meta.item
 
 import dan200.computercraft.shared.ModRegistry
-import dan200.computercraft.shared.computer.items.AbstractComputerItem
 import dan200.computercraft.shared.pocket.items.PocketComputerItem
 import dan200.computercraft.shared.turtle.items.TurtleItem
 import io.sc3.plethora.api.meta.ItemStackMetaProvider
 import io.sc3.plethora.gameplay.neural.NeuralInterfaceItem
 import io.sc3.plethora.gameplay.registry.Registration.ModItems
 import net.minecraft.component.DataComponentTypes
+import net.minecraft.item.BlockItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 
 class ComputerItemMeta : ItemStackMetaProvider<Item>(Item::class.java, "computer") {
   override fun getMeta(stack: ItemStack, item: Item): Map<String, *> {
-    if (item !is AbstractComputerItem && item !is PocketComputerItem && item !is NeuralInterfaceItem) {
+    if (item !is BlockItem && item !is PocketComputerItem && item !is NeuralInterfaceItem) {
       return emptyMap<String, Any>()
+    }
+
+    if (item is BlockItem) {
+      val id = stack.get(ModRegistry.DataComponents.COMPUTER_ID.get())?.id() ?: -1
+      if (id < 0) return emptyMap<String, Any>()
     }
 
     val data: MutableMap<String, Any?> = HashMap(3)

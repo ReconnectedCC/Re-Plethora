@@ -4,13 +4,14 @@ import dan200.computercraft.core.computer.ComputerSide
 import dan200.computercraft.impl.PocketUpgrades
 import dan200.computercraft.shared.computer.core.ComputerFamily.ADVANCED
 import dan200.computercraft.shared.computer.core.ServerComputer
-import dan200.computercraft.shared.util.ComponentMap
+import dan200.computercraft.shared.computer.core.TerminalSize
 import io.sc3.plethora.Plethora
 import io.sc3.plethora.core.executor.TaskRunner
 import io.sc3.plethora.gameplay.neural.NeuralComputerHandler.HEIGHT
 import io.sc3.plethora.gameplay.neural.NeuralComputerHandler.WIDTH
 import io.sc3.plethora.gameplay.neural.NeuralHelpers.INV_SIZE
 import io.sc3.plethora.util.Helpers
+import net.minecraft.component.ComponentMap
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.NbtComponent
 import net.minecraft.entity.LivingEntity
@@ -29,7 +30,7 @@ class NeuralComputer(
   pos: BlockPos,
   id: Int,
   label: String?,
-) : ServerComputer(world, pos, id, label, ADVANCED, WIDTH, HEIGHT, ComponentMap.empty()) {
+) : ServerComputer(world, pos, properties(id,ADVANCED).label(label).terminalSize(TerminalSize(WIDTH,HEIGHT))) {
   var entity: WeakReference<LivingEntity>? = null
     private set
 

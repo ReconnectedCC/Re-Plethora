@@ -4,6 +4,7 @@ import dan200.computercraft.api.ComputerCraftAPI
 import dan200.computercraft.api.filesystem.Mount
 import dan200.computercraft.api.media.IMedia
 import dan200.computercraft.shared.config.Config
+import dan200.computercraft.shared.config.ConfigSpec
 import dev.emi.trinkets.api.SlotReference
 import dev.emi.trinkets.api.TrinketItem
 import io.sc3.library.Tooltips.addDescLines
@@ -62,7 +63,8 @@ class NeuralInterfaceItem(settings: Settings?) : TrinketItem(settings), IMedia {
     return if (id < 0) {
       null
     } else {
-      ComputerCraftAPI.createSaveDirMount(world.server, "computer/$id", Config.computerSpaceLimit.toLong())
+      //TODO: Add NBT override as architected
+      ComputerCraftAPI.createSaveDirMount(world.server, "computer/$id", ConfigSpec.computerSpaceLimit.get().toLong())
     }
   }
 
