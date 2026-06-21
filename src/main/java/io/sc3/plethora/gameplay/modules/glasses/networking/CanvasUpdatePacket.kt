@@ -18,7 +18,7 @@ data class CanvasUpdatePacket(
   var changed: MutableList<BaseObject> = mutableListOf(),
   var removed: IntArray = IntArray(0)
 ): ScLibraryPacket() {
-  override fun getId(): CustomPayload.Id<CanvasUpdatePacket> = id
+  override fun getId(): CustomPayload.Id<CanvasUpdatePacket> = Companion.id
 
   fun toBytes(buf: PacketByteBuf) {
     buf.writeInt(canvasId)

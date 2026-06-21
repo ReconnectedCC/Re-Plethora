@@ -12,7 +12,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 
 data class CanvasRemovePacket(var canvasId: Int = 0): ScLibraryPacket() {
-  override fun getId(): CustomPayload.Id<CanvasRemovePacket> = id
+  override fun getId(): CustomPayload.Id<CanvasRemovePacket> = Companion.id
 
   fun toBytes(buf: PacketByteBuf) {
     buf.writeInt(canvasId)

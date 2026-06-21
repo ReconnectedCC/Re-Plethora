@@ -15,7 +15,7 @@ data class KeyboardKeyPacket(
   val chars:    List<CharEvent>,
   val releases: List<Int>
 ): ScLibraryPacket() {
-  override fun getId(): CustomPayload.Id<KeyboardKeyPacket> = id
+  override fun getId(): CustomPayload.Id<KeyboardKeyPacket> = Companion.id
 
   fun toBytes(buf: PacketByteBuf) {
     buf.writeCollection(presses) { b, p -> p.toBytes(b) }

@@ -18,7 +18,7 @@ data class CanvasAddPacket(
   var canvasId: Int = 0,
   var objects: Collection<BaseObject> = emptyList()
 ): ScLibraryPacket() {
-  override fun getId(): CustomPayload.Id<CanvasAddPacket> = id
+  override fun getId(): CustomPayload.Id<CanvasAddPacket> = Companion.id
 
   fun toBytes(buf: PacketByteBuf) {
     buf.writeInt(canvasId)
