@@ -1,4 +1,6 @@
 import net.darkhax.curseforgegradle.TaskPublishCurseForge
+import org.gradle.kotlin.dsl.modCompileOnly
+import org.gradle.kotlin.dsl.modLocalRuntime
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -46,6 +48,7 @@ val scGoodiesVersion: String by project
 val figuraVersion: String by project
 val common_protection_version: String by project
 val ledger_version: String by project
+val emi_version: String by project
 
 val archivesBaseName = "plethora"
 version = modVersion
@@ -112,10 +115,11 @@ repositories {
     }
   }
 
-  maven("https://maven.terraformersmc.com") {
+  maven("https://maven.terraformersmc.com/releases") {
     // Trinkets, mod-menu
     content {
       includeModule("dev.emi", "trinkets")
+      includeModule("dev.emi", "emi-fabric")
       includeGroup("com.terraformersmc")
     }
   }
@@ -162,6 +166,10 @@ dependencies {
     exclude("net.fabricmc.fabric-api", "fabric-gametest-api-v1")
   }
 
+  modRuntimeOnly("cc.tweaked:cc-tweaked-$ccMcVersion-fabric:$ccVersion") {
+    exclude("net.fabricmc.fabric-api", "fabric-gametest-api-v1")
+  }
+
 
   runtimeOnly("com.electronwill.night-config:toml:3.6.5") // FIXME: CC:T has a broken night config dep
 
@@ -201,6 +209,10 @@ dependencies {
   modImplementation(include("eu.pb4","common-protection-api",common_protection_version))
   // Ledger
   modCompileOnly(include("com.github.quiltservertools","Ledger",ledger_version))
+
+  // Fabric
+  modCompileOnly("dev.emi:emi-fabric:${emi_version}:api")
+  modLocalRuntime("dev.emi:emi-fabric:${emi_version}")
 }
 
 tasks {

@@ -6,7 +6,7 @@
       "item": "computercraft:cable"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "S": {
       "item": "minecraft:stone"

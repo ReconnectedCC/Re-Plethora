@@ -3,20 +3,49 @@
   "category": "misc",
   "key": {
     "D": {
-      "tag": "c:diamonds"
+      "tag": "c:gems/diamond"
     },
     "F": {
       "fabric:type": "fabric:any",
       "ingredients": [
         {
-          "fabric:type": "sc-library:enchantment",
-          "enchantment": "minecraft:flame",
-          "minLevel": 1
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:enchanted_book"
+          },
+          "components": {
+            "minecraft:stored_enchantments": {
+              "levels": {
+                "minecraft:flame": 1
+              }
+            }
+          }
         },
         {
-          "fabric:type": "sc-library:enchantment",
-          "enchantment": "minecraft:fire_aspect",
-          "minLevel": 1
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:enchanted_book"
+          },
+          "components": {
+            "minecraft:stored_enchantments": {
+              "levels": {
+                "minecraft:fire_aspect": 1
+              }
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:enchanted_book"
+          },
+          "components": {
+            "minecraft:stored_enchantments": {
+              "levels": {
+                "minecraft:fire_aspect": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -24,7 +53,7 @@
       "tag": "c:glass_blocks"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     }
   },
   "pattern": [

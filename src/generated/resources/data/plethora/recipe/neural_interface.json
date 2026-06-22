@@ -3,10 +3,10 @@
   "category": "misc",
   "key": {
     "G": {
-      "tag": "c:gold_ingots"
+      "tag": "c:ingots/gold"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "M": {
       "tag": "computercraft:wired_modem"
@@ -15,7 +15,7 @@
       "item": "computercraft:pocket_computer_advanced"
     },
     "R": {
-      "tag": "c:redstone_dusts"
+      "tag": "c:dusts/redstone"
     }
   },
   "pattern": [

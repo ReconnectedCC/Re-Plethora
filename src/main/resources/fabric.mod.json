@@ -41,6 +41,12 @@
         "adapter": "kotlin",
         "value": "io.sc3.plethora.util.config.ModMenuIntegration"
       }
+    ],
+    "emi": [
+      {
+        "adapter": "kotlin",
+        "value": "io.sc3.plethora.PlethoraEmiPlugin"
+      }
     ]
   },
   "mixins": [

@@ -3,13 +3,12 @@ package io.sc3.plethora.gameplay.data.recipes.handlers
 import dan200.computercraft.api.ComputerCraftTags
 import dan200.computercraft.shared.ModRegistry
 import io.sc3.library.recipe.RecipeHandler
-import io.sc3.library.recipe.offerTo
 import io.sc3.plethora.Plethora.ModId
 import io.sc3.plethora.gameplay.data.recipes.NeuralInterfaceRecipe
 import io.sc3.plethora.gameplay.data.recipes.handlers.recipe.ShapedSpecBuilder
 import io.sc3.plethora.gameplay.data.recipes.inventoryChange
 import io.sc3.plethora.gameplay.registry.Registration.ModItems
-import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags
+import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags
 import net.minecraft.data.server.recipe.CraftingRecipeJsonBuilder
 import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder
@@ -24,7 +23,7 @@ object MiscRecipes : RecipeHandler {
     register(RECIPE_SERIALIZER, ModId("neural_interface"), NeuralInterfaceRecipe.Serializer)
   }
 
-  override fun generateRecipes(exporter: RecipeExporter, registries: RegistryWrapper.WrapperLookup) {
+  override fun generateRecipes(exporter: RecipeExporter, wrapper: RegistryWrapper.WrapperLookup) {
     // Manipulator Mark I
     ShapedRecipeJsonBuilder
       .create(RecipeCategory.MISC, ModItems.MANIPULATOR_MARK_1)

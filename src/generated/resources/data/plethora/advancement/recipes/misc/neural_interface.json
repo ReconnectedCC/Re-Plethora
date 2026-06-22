@@ -43,9 +43,13 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "plethora:neural_interface"
+        "items": [
+          {
+            "items": "plethora:neural_interface"
+          }
+        ]
       },
-      "trigger": "minecraft:recipe_unlocked"
+      "trigger": "minecraft:inventory_changed"
     },
     "has_turtle_advanced": {
       "conditions": {

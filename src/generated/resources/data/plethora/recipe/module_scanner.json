@@ -9,7 +9,7 @@
       "item": "minecraft:ender_eye"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "O": {
       "item": "minecraft:observer"

@@ -6,7 +6,7 @@
       "item": "minecraft:ender_chest"
     },
     "G": {
-      "tag": "c:gold_ingots"
+      "tag": "c:ingots/gold"
     },
     "H": {
       "item": "minecraft:diamond_helmet"

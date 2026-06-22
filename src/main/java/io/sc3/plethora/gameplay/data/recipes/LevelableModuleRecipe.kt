@@ -18,13 +18,19 @@ abstract class LevelableModuleRecipe(
   category: CraftingRecipeCategory = CraftingRecipeCategory.MISC,
   val module: LevelableModuleItem
 ) : ShapelessRecipe(
-  "", category, ItemStack(module), DefaultedList.copyOf(
-    Ingredient.EMPTY, // Defaulted item
-    ofItems(module), // Module to be upgraded
+  "", category,
+  // Result stack with level 1 for EMI display
+  ItemStack(module).also { stack ->
+    val tag = NbtCompound().apply { putInt("level", 1) }
+    stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(tag))
+  },
+  DefaultedList.copyOf(
+    Ingredient.EMPTY,
+    ofItems(module),  // Accepts any level — EMI shows level 0 by default
     ofItems(Items.NETHER_STAR),
     ofItems(Items.NETHERITE_INGOT)
   )
-) {
+){
   override fun craft(inv: CraftingRecipeInput, manager: RegistryWrapper.WrapperLookup): ItemStack {
     val output = getResult(manager)
 

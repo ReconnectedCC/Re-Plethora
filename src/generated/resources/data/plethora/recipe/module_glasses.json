@@ -9,7 +9,7 @@
       "item": "computercraft:monitor_advanced"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "M": {
       "item": "computercraft:wireless_modem_normal"

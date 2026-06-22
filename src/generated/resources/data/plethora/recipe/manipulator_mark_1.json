@@ -3,19 +3,19 @@
   "category": "misc",
   "key": {
     "C": {
-      "tag": "c:gold_ingots"
+      "tag": "c:ingots/gold"
     },
     "G": {
       "tag": "c:glass_blocks"
     },
     "I": {
-      "tag": "c:iron_ingots"
+      "tag": "c:ingots/iron"
     },
     "M": {
       "item": "computercraft:cable"
     },
     "R": {
-      "tag": "c:redstone_dusts"
+      "tag": "c:dusts/redstone"
     }
   },
   "pattern": [

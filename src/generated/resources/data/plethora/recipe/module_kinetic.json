@@ -3,18 +3,117 @@
   "category": "misc",
   "key": {
     "B": {
-      "fabric:type": "sc-library:brew",
-      "effect": "minecraft:jump_boost",
-      "potion": "minecraft:leaping"
+      "fabric:type": "fabric:any",
+      "ingredients": [
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:long_leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:strong_leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:splash_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:splash_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:long_leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:splash_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:strong_leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:lingering_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:lingering_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:long_leaping"
+            }
+          }
+        },
+        {
+          "fabric:type": "fabric:components",
+          "base": {
+            "item": "minecraft:lingering_potion"
+          },
+          "components": {
+            "minecraft:potion_contents": {
+              "potion": "minecraft:strong_leaping"
+            }
+          }
+        }
+      ]
     },
     "G": {
-      "tag": "c:gold_ingots"
+      "tag": "c:ingots/gold"
     },
     "P": {
       "item": "minecraft:piston"
     },
     "R": {
-      "tag": "c:redstone_dusts"
+      "tag": "c:dusts/redstone"
     }
   },
   "pattern": [
