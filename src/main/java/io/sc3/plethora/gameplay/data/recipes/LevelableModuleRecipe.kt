@@ -25,7 +25,7 @@ abstract class LevelableModuleRecipe(
     stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(tag))
   },
   DefaultedList.copyOf(
-    Ingredient.EMPTY,
+    ofItems(module),
     ofItems(module),  // Accepts any level — EMI shows level 0 by default
     ofItems(Items.NETHER_STAR),
     ofItems(Items.NETHERITE_INGOT)
