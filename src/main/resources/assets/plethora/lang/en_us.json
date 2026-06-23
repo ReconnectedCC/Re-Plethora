@@ -64,5 +64,7 @@
 
   "gui.plethora.config.title": "Plethora",
   "gui.plethora.config.scanner.title": "Scanner",
-  "gui.plethora.config.scanner.ore_colours": "Ore Colors"
+  "gui.plethora.config.scanner.ore_colours": "Ore Colors",
+
+  "tag.trinkets.head.face": "Face Slot"
 }
