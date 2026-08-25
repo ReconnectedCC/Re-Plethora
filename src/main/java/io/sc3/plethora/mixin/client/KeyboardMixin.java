@@ -24,7 +24,9 @@ public class KeyboardMixin {
     )
   )
   private void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
-    ClientKeyListener.onKeyEvent(key, action);
+    if (window == client.getWindow().getHandle() && client.currentScreen == null) {
+      ClientKeyListener.onKeyEvent(key, action);
+    }
   }
 
   @Inject(
