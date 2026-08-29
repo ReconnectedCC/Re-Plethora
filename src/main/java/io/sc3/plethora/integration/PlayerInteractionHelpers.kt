@@ -1,5 +1,6 @@
 package io.sc3.plethora.integration
 
+import eu.pb4.common.protection.api.CommonProtection
 import io.sc3.plethora.api.method.FutureMethodResult
 import net.minecraft.entity.Entity
 import net.minecraft.item.ItemStack
@@ -27,10 +28,13 @@ object PlayerInteractionHelpers {
         val target = hit.entity
 
         val pos = hit.pos.subtract(target.pos)
-
+        if (!CommonProtection.canInteractEntity(player.world,target, player.gameProfile, player)) {
+          FutureMethodResult.result(false, "No permission to interact with this entity")
+        }
         val result = target.interactAt(player, pos, hand)
         if (result.isAccepted) return FutureMethodResult.result(true, "entity")
         if (player.interact(target, hand).isAccepted) return FutureMethodResult.result(true, "entity")
+
       }
 
       HitResult.Type.BLOCK -> {
@@ -39,7 +43,9 @@ object PlayerInteractionHelpers {
         val pos = hit.blockPos
         val side = hit.side
         val insideBlock = hit.isInsideBlock
-
+        if (!(world.canPlayerModifyAt(player, pos) && CommonProtection.canInteractBlock(player.world,pos,player.gameProfile,player))) {
+          return FutureMethodResult.result(false, "No permission to interact with this block")
+        }
         if (!world.isAir(pos) && world.worldBorder.contains(pos)) {
           var result = rightClickBlock(player, world, stack, hand, pos, side, hit.pos, insideBlock)
           if (result.isAccepted) return FutureMethodResult.result(true, "block")
@@ -118,6 +124,9 @@ object PlayerInteractionHelpers {
   fun attack(player: ServerPlayerEntity, hitEntity: Entity?, hitResult: EntityHitResult): Pair<Boolean, String> =
     if (hitEntity != null) {
       // TODO: Use the original entity for the main attacker
+      if (!CommonProtection.canDamageEntity(player.world,hitEntity, player.gameProfile, player)) {
+        return Pair(false, "No permission to attack this entity")
+      }
       player.attack(hitEntity)
       Pair(true, "entity")
     } else {

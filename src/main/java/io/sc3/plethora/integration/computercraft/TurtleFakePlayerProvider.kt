@@ -3,6 +3,7 @@ package io.sc3.plethora.integration.computercraft
 import dan200.computercraft.api.turtle.ITurtleAccess
 import dan200.computercraft.shared.turtle.TurtleUtil
 import dan200.computercraft.shared.util.DirectionUtil
+import io.sc3.plethora.Plethora.log
 import io.sc3.plethora.api.IPlayerOwnable
 import io.sc3.plethora.gameplay.PlethoraFakePlayer
 import net.minecraft.entity.EquipmentSlot
@@ -58,7 +59,8 @@ object TurtleFakePlayerProvider {
     val activeStack = player.getStackInHand(Hand.MAIN_HAND)
     if (!activeStack.isEmpty) {
       activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
-        player.attributes.getCustomInstance(attribute)?.addTemporaryModifier(modifier)
+        if (!player.attributes.hasModifierForAttribute(attribute, modifier.id)) // This shouldn't happen, yet here it is
+          player.getAttributeInstance(attribute)?.addTemporaryModifier(modifier)
       }
     }
   }
@@ -72,7 +74,12 @@ object TurtleFakePlayerProvider {
     val activeStack = player.getStackInHand(Hand.MAIN_HAND)
     if (!activeStack.isEmpty) {
       activeStack.applyAttributeModifiers(EquipmentSlot.MAINHAND) { attribute, modifier ->
-        player.attributes.getCustomInstance(attribute)?.removeModifier(modifier)
+        val instance = player.attributes.getCustomInstance(attribute)
+        instance?.removeModifier(modifier)
+        if (!instance?.modifiers.isNullOrEmpty()) {
+          log.warn("Leftover attribute modifiers on fake player ${player.uuid}: ${instance.modifiers}")
+          //instance.clearModifiers() maybe?
+        }
       }
     }
 

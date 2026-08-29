@@ -151,13 +151,13 @@ repositories {
 }
 
 dependencies {
-  minecraft("com.mojang", "minecraft", minecraftVersion)
+  minecraft("com.mojang:minecraft:$minecraftVersion")
   mappings("net.fabricmc", "yarn", yarnMappings, null, "v2")
-  modImplementation("net.fabricmc", "fabric-loader", loaderVersion)
-  modImplementation("net.fabricmc.fabric-api", "fabric-api", fabricVersion) {
+  modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
+  modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion") {
     exclude("net.fabricmc.fabric-api", "fabric-gametest-api-v1")
   }
-  modImplementation("net.fabricmc", "fabric-language-kotlin", fabricKotlinVersion)
+  modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
   modImplementation(include("io.sc3", "sc-library", scLibraryVersion))
 

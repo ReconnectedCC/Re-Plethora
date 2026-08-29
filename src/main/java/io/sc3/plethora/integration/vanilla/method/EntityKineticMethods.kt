@@ -1,6 +1,7 @@
 package io.sc3.plethora.integration.vanilla.method
 
 import dan200.computercraft.api.lua.IArguments
+import eu.pb4.common.protection.api.CommonProtection
 import io.sc3.plethora.api.method.ArgumentExt.optHand
 import io.sc3.plethora.api.method.FutureMethodResult
 import io.sc3.plethora.api.method.IUnbakedContext
@@ -21,7 +22,6 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket
 import net.minecraft.network.packet.s2c.play.PositionFlag
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object EntityKineticMethods {
   private val LOOK_FLAGS = EnumSet.of(PositionFlag.X, PositionFlag.Y, PositionFlag.Z)
-  private val trackedDigEvents = ConcurrentHashMap<ServerPlayerEntity, BlockPos>();
+  private val trackedDigEvents = ConcurrentHashMap<ServerPlayerEntity, BlockPos>()
 
   val LOOK = SubtargetedModuleMethod.of(
     "look", KINETIC_M, LivingEntity::class.java,
@@ -109,7 +109,7 @@ object EntityKineticMethods {
             val result = fakePlayer.dig(hit.blockPos, hit.side)
             FutureMethodResult.result(result.left, result.right)
           } else {
-            if(player.world.canPlayerModifyAt(player, baseHit.blockPos)){
+            if(player.world.canPlayerModifyAt(player, baseHit.blockPos) && CommonProtection.canBreakBlock(player.world,baseHit.blockPos,player.gameProfile,player )){
               startDigging(player, hit)
               FutureMethodResult.result(true, "Block")
             }else {
