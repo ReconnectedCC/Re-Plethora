@@ -77,6 +77,7 @@ public class Task {
 
     final void cancel() {
         done = true;
+        whenDone();
     }
 
     final boolean isDone() {
