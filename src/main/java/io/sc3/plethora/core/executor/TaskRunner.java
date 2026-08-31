@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 /**
  * This is a system capable of running a series of {@link Task}s.
@@ -40,6 +41,14 @@ public class TaskRunner { // TODO: Implements ITickable?
 
     public void reset() {
         tasks.clear();
+    }
+
+    void cancel(Predicate<Task> predicate) {
+        tasks.removeIf(task -> {
+            if (!predicate.test(task)) return false;
+            task.cancel();
+            return true;
+        });
     }
 
     public long getNewTaskId() {
