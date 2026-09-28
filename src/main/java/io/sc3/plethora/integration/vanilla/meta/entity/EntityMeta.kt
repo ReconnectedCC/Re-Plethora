@@ -77,6 +77,16 @@ object EntityMeta : BaseMetaProvider<Entity>(
       result["z"] = pos.z
     }
 
+    val boundingBox = entity.boundingBox.offset(entity.pos.negate())
+    result["boundingBox"] = mapOf(
+      "minX" to boundingBox.minX,
+      "minY" to boundingBox.minY,
+      "minZ" to boundingBox.minZ,
+      "maxX" to boundingBox.maxX,
+      "maxY" to boundingBox.maxY,
+      "maxZ" to boundingBox.maxZ
+    )
+
     return result
   }
 }

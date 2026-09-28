@@ -94,6 +94,10 @@ repositories {
     }
   }
 
+  maven {
+    url = uri("https://maven.reconnected.cc/releases")
+  }
+
   maven("https://maven.squiddev.cc") {
     content {
       includeGroup("cc.tweaked")
