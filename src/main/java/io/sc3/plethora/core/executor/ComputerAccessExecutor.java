@@ -32,6 +32,9 @@ public class ComputerAccessExecutor implements IResultExecutor {
 
 	private volatile boolean attached;
 
+	// this lock prevents the unlikely but possible race where a task is submitted while the detach method is running, which could result in it not being properly cancelled
+	private final Object lifecycleLock = new Object();
+
 	public ComputerAccessExecutor(IComputerAccess access, TaskRunner runner) {
 		this.access = access;
 		attachmentName = access.getAttachmentName();
@@ -41,32 +44,36 @@ public class ComputerAccessExecutor implements IResultExecutor {
 	@Nullable
 	@Override
 	public MethodResult execute(@Nonnull FutureMethodResult result, @Nonnull ILuaContext context) throws LuaException {
-		assertAttached();
-		if (result.isFinal()) return result.getResult();
+		synchronized (lifecycleLock) {
+			assertAttached();
+			if (result.isFinal()) return result.getResult();
 
-		long taskId = runner.getNewTaskId();
+			long taskId = runner.getNewTaskId();
 
-		ComputerTask task = new ComputerTask(this, result.getCallback(), result.getResolver(), true, taskId);
-		boolean ok = runner.submit(task);
-		if (!ok) {
-			throw new LuaException("Task limit exceeded");
+			ComputerTask task = new ComputerTask(this, result.getCallback(), result.getResolver(), true, taskId);
+			boolean ok = runner.submit(task);
+			if (!ok) {
+				throw new LuaException("Task limit exceeded");
+			}
+
+			return new ComputerTaskCallback(taskId, task, this::assertAttached).pull;
 		}
-
-		return new ComputerTaskCallback(taskId, task, this::assertAttached).pull;
 	}
 
 	@Override
 	public void executeAsync(@Nonnull FutureMethodResult result) throws LuaException {
-		assertAttached();
-		if (result.isFinal()) return;
+		synchronized (lifecycleLock) {
+			assertAttached();
+			if (result.isFinal()) return;
 
-		long taskId = runner.getNewTaskId();
+			long taskId = runner.getNewTaskId();
 
-		ComputerTask task = new ComputerTask(this, result.getCallback(), result.getResolver(), false, taskId);
-		boolean ok = runner.submit(task);
-		if (!ok) {
-			task.cancel();
-			throw new LuaException("Task limit exceeded");
+			ComputerTask task = new ComputerTask(this, result.getCallback(), result.getResolver(), false, taskId);
+			boolean ok = runner.submit(task);
+			if (!ok) {
+				task.cancel();
+				throw new LuaException("Task limit exceeded");
+			}
 		}
 	}
 
@@ -75,11 +82,16 @@ public class ComputerAccessExecutor implements IResultExecutor {
 	}
 
 	public void attach() {
-		attached = true;
+		synchronized (lifecycleLock) {
+			attached = true;
+		}
 	}
 
 	public void detach() {
-		attached = false;
+		synchronized (lifecycleLock) {
+			runner.cancel(task -> task instanceof ComputerTask computerTask && computerTask.executor == this);
+			attached = false;
+		}
 	}
 
 	private static final class ComputerTaskCallback implements ILuaCallback {
