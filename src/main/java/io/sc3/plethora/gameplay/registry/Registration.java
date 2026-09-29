@@ -49,8 +49,6 @@ import io.sc3.plethora.integration.vanilla.registry.VanillaPeripheralRegistratio
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -58,7 +56,6 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.damage.DamageType;
@@ -88,10 +85,10 @@ public final class Registration {
   public static final EntityType<LaserEntity> LASER_ENTITY = Registry.register(
     Registries.ENTITY_TYPE,
     Identifier.of(Plethora.MOD_ID, "laser"),
-    FabricEntityTypeBuilder.<LaserEntity>create(SpawnGroup.MISC, LaserEntity::new)
-      .dimensions(EntityDimensions.fixed(0.25F, 0.25F))
-      .trackRangeBlocks(4).trackedUpdateRate(10)
-      .forceTrackedVelocityUpdates(true)
+    EntityType.Builder.<LaserEntity>create(LaserEntity::new,SpawnGroup.MISC)
+      .dimensions(0.25F, 0.25F)
+      .maxTrackingRange(4).trackingTickInterval(10)
+      .alwaysUpdateVelocity(true)
       .build()
   );
 
@@ -243,7 +240,7 @@ public final class Registration {
 
     private static <T extends BlockEntity> BlockEntityType<T> ofBlock(Block block, String id,
                                       BiFunction<BlockPos, BlockState, T> factory) {
-      BlockEntityType<T> blockEntityType = FabricBlockEntityTypeBuilder.create(factory::apply, block).build();
+      BlockEntityType<T> blockEntityType = BlockEntityType.Builder.create(factory::apply, block).build();
       return Registry.register(BLOCK_ENTITY_TYPE, Identifier.of(Plethora.MOD_ID, id), blockEntityType);
     }
   }
