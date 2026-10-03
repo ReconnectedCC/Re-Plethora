@@ -85,8 +85,6 @@ class ObjectFrame3d(
     val innerCtx = DrawContext(mc, matrixStack, mc.bufferBuilders.entityVertexConsumers)
     canvas.drawChildren(children.iterator(), innerCtx, consumers)
 
-    innerCtx.draw() // Flush anything DrawContext buffered
-
     framebuffer.endWrite()
     modelView.popMatrix()
     RenderSystem.applyModelViewMatrix()
