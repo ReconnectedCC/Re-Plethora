@@ -46,15 +46,16 @@ class ObjectFrame3d(
     buf.writeFloat(scale)
   }
 
-  override fun draw(canvas: CanvasClient, ctx: DrawContext, consumers: VertexConsumerProvider?) {
+  private fun renderCanvasToFramebuffer(
+    canvas: CanvasClient,
+    consumers: VertexConsumerProvider?,
+    w: Float,
+    h: Float
+  ) {
     val children = canvas.getChildren(id) ?: return
-
     val mc = MinecraftClient.getInstance()
-    val w = WIDTH.toFloat(); val h = HEIGHT.toFloat()
 
     val currentBuffer = GlStateManager.getBoundFramebuffer()
-    val currentFog = RenderSystem.getShaderFogEnd()
-    val currentFogColor = RenderSystem.getShaderFogColor()
     RenderSystem.setShaderFogEnd(2000.0f)
     RenderSystem.setShaderFogColor(0.0f, 0.0f, 0.0f, 0.0f)
 
@@ -62,12 +63,17 @@ class ObjectFrame3d(
 
     RenderSystem.backupProjectionMatrix()
 
-    val matrix4f = Matrix4f().setOrtho(0.0f, WIDTH.toFloat(), HEIGHT.toFloat(), 0.0f, 100.0f, 300.0f)
+    val matrix4f = Matrix4f().setOrtho(0.0f, w, h, 0.0f, 1000.0f, 3000.0f)
     RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_Z)
 
     val matrixStack = MatrixStack()
     matrixStack.loadIdentity()
-    matrixStack.translate(0.0, 0.0, -100.0)
+
+    val modelView = RenderSystem.getModelViewStack()
+    modelView.pushMatrix()
+    modelView.identity()
+    modelView.translate(0.0f, 0.0f, -2000.0f)
+    RenderSystem.applyModelViewMatrix()
 
     RenderSystem.colorMask(true, true, true, true)
     framebuffer.setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
@@ -75,16 +81,27 @@ class ObjectFrame3d(
     framebuffer.beginWrite(true)
 
     RenderSystem.disableDepthTest()
+
     val innerCtx = DrawContext(mc, matrixStack, mc.bufferBuilders.entityVertexConsumers)
     canvas.drawChildren(children.iterator(), innerCtx, consumers)
 
+    framebuffer.endWrite()
+    modelView.popMatrix()
+    RenderSystem.applyModelViewMatrix()
     RenderSystem.viewport(0, 0, mc.window.framebufferWidth, mc.window.framebufferHeight)
     RenderSystem.restoreProjectionMatrix()
-    framebuffer.endWrite()
     GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, currentBuffer)
+  }
+
+  private fun renderFramebufferToWorld(
+    ctx: DrawContext,
+    w: Float,
+    h: Float
+  ) {
 
     // ===============================
-
+    val currentFog = RenderSystem.getShaderFogEnd()
+    val currentFogColor = RenderSystem.getShaderFogColor()
     val matrices = ctx.matrices
     matrices.push()
 
@@ -104,16 +121,27 @@ class ObjectFrame3d(
     RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
     RenderSystem.setShaderTexture(0, framebuffer.colorAttachment)
     RenderSystem.enableBlend()
-    buffer.vertex(matrix, 0.0f, h, 0.0f).texture(0.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
-    buffer.vertex(matrix, w, h, 0.0f).texture(1.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
-    buffer.vertex(matrix, w, 0.0f, 0.0f).texture(1.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
-    buffer.vertex(matrix, 0.0f, 0.0f, 0.0f).texture(0.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+
+    val hw = w / 2; val hh = h / 2
+
+    buffer.vertex(matrix, -hw, hh, 0.0f).texture(0.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, hw, hh, 0.0f).texture(1.0f, 0.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, hw, -hh, 0.0f).texture(1.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+    buffer.vertex(matrix, -hw, -hh, 0.0f).texture(0.0f, 1.0f).color(1.0f, 1.0f, 1.0f, 0.2f)
+
     BufferRenderer.drawWithGlobalProgram(buffer.end())
 
     RenderSystem.setShaderFogEnd(currentFog)
     RenderSystem.setShaderFogColor(currentFogColor[0], currentFogColor[1], currentFogColor[2], currentFogColor[3])
 
     matrices.pop()
+  }
+
+  override fun draw(canvas: CanvasClient, ctx: DrawContext, consumers: VertexConsumerProvider?) {
+    val w = WIDTH.toFloat(); val h = HEIGHT.toFloat()
+    renderCanvasToFramebuffer(canvas, consumers, w, h)
+
+    renderFramebufferToWorld(ctx, w, h)
   }
 
   companion object {
