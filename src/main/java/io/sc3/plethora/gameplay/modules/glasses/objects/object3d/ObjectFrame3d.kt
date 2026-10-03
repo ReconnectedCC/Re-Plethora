@@ -63,7 +63,7 @@ class ObjectFrame3d(
 
     RenderSystem.backupProjectionMatrix()
 
-    val matrix4f = Matrix4f().setOrtho(0.0f, w, h, 0.0f, 100.0f, 300.0f)
+    val matrix4f = Matrix4f().setOrtho(0.0f, w, h, 0.0f, 1000.0f, 3000.0f)
     RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_Z)
 
     val matrixStack = MatrixStack()
@@ -72,7 +72,7 @@ class ObjectFrame3d(
     val modelView = RenderSystem.getModelViewStack()
     modelView.pushMatrix()
     modelView.identity()
-    modelView.translate(0.0f, 0.0f, -100.0f)
+    modelView.translate(0.0f, 0.0f, -2000.0f)
     RenderSystem.applyModelViewMatrix()
 
     RenderSystem.colorMask(true, true, true, true)
@@ -84,6 +84,8 @@ class ObjectFrame3d(
 
     val innerCtx = DrawContext(mc, matrixStack, mc.bufferBuilders.entityVertexConsumers)
     canvas.drawChildren(children.iterator(), innerCtx, consumers)
+
+    innerCtx.draw() // Flush anything DrawContext buffered
 
     framebuffer.endWrite()
     modelView.popMatrix()
