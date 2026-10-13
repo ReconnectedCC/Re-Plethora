@@ -10,6 +10,8 @@ import net.minecraft.block.Block
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.tag.BlockTags
+import net.minecraft.registry.tag.TagKey
+import net.minecraft.util.Identifier
 import java.util.concurrent.CompletableFuture
 
 class BlockTagProvider(
@@ -24,10 +26,18 @@ class BlockTagProvider(
 
     getOrCreateTagBuilder(BLOCK_SCANNER_ORES)
       .addOptionalTag(ConventionalBlockTags.ORES)
-      // .add(Blocks.ANCIENT_DEBRIS)
+    // .add(Blocks.ANCIENT_DEBRIS)
 
     getOrCreateTagBuilder(LASER_DONT_DROP)
       .addOptionalTag(BlockTags.TALL_FLOWERS)
+      .addOptionalTag(TagKey.of(
+        RegistryKeys.BLOCK,
+        Identifier.of("computercraft", "computer")
+      ))
+      .addOptionalTag(TagKey.of(
+        RegistryKeys.BLOCK,
+        Identifier.of("computercraft", "turtle")
+      ))
   }
 }
 
