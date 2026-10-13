@@ -212,7 +212,7 @@ dependencies {
   // Common Protection API
   modImplementation(include("eu.pb4","common-protection-api",common_protection_version))
   // Ledger
-  modCompileOnly(include("com.github.quiltservertools","Ledger",ledger_version))
+  modCompileOnly("com.github.quiltservertools","Ledger",ledger_version)
 
   // Fabric
   modCompileOnly("dev.emi:emi-fabric:${emi_version}:api")

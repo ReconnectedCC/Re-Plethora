@@ -1,8 +1,5 @@
 package io.sc3.plethora.gameplay.modules.laser
 
-import com.github.quiltservertools.ledger.Ledger.api
-import com.github.quiltservertools.ledger.actions.ActionType
-import com.github.quiltservertools.ledger.actionutils.ActionFactory.blockBreakAction
 import com.github.quiltservertools.ledger.utility.Sources
 import com.mojang.authlib.GameProfile
 import eu.pb4.common.protection.api.CommonProtection
@@ -14,16 +11,21 @@ import io.sc3.plethora.gameplay.PlethoraEntityTags
 import io.sc3.plethora.gameplay.PlethoraFakePlayer
 import io.sc3.plethora.gameplay.registry.Registration
 import io.sc3.plethora.gameplay.registry.Registration.ModDamageSources
+import io.sc3.plethora.integration.ledger.BlockBreakLogger
+import io.sc3.plethora.integration.ledger.LedgerIntegration
 import io.sc3.plethora.mixin.TntBlockInvoker
 import io.sc3.plethora.util.PlayerHelpers
 import io.sc3.plethora.util.WorldPosition
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.block.Block
+import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.block.FluidBlock
 import net.minecraft.block.OperatorBlock
 import net.minecraft.block.Portal
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
@@ -66,6 +68,18 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
   private var shooterPos: WorldPosition? = null
 
   private var canDestroyBlocks: Boolean = true
+
+  private val blockBreakLogger: BlockBreakLogger =
+    if (FabricLoader.getInstance().isModLoaded("ledger")) {
+      Plethora.log.info("Ledger is loaded, creating integration.")
+      LedgerIntegration()
+    } else {
+      object : BlockBreakLogger {
+        override fun logBlockBreak(world: World, position: BlockPos, prevBlockState: BlockState, player: PlayerEntity, prevBlockEntity: BlockEntity?, source: String, didBreak: Boolean) {
+          // Nothing.
+        }
+      }
+    }
 
   var potency = 0.0f
   var spawnTime = world.time
@@ -290,11 +304,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
         val prevBlockState = world.getBlockState(position)
         val prevBlockEntity = world.getBlockEntity(position)
         val removeBlock = world.removeBlock(position, false)
-        val laserBreak: ActionType =
-          blockBreakAction(world, position, prevBlockState, player, prevBlockEntity, Sources.FIRE)
-        if (removeBlock) {
-          api.logAction(laserBreak)
-        }
+        blockBreakLogger.logBlockBreak(world, position, prevBlockState, player, prevBlockEntity, Sources.FIRE, removeBlock)
       } else if (block === Blocks.OBSIDIAN) {
         potency -= hardness
 
@@ -411,11 +421,7 @@ class LaserEntity : ProjectileEntity, IPlayerOwnable {
         val prevBlockState = world.getBlockState(pos)
         val prevBlockEntity = world.getBlockEntity(pos)
         breakBlock = world.breakBlock(pos, drop, player)
-        val laserBreak: ActionType =
-          blockBreakAction(world, pos, prevBlockState, player, prevBlockEntity, Sources.PLAYER)
-        if (breakBlock) {
-          api.logAction(laserBreak)
-        }
+        blockBreakLogger.logBlockBreak(world, pos, prevBlockState, player, prevBlockEntity, Sources.PLAYER, breakBlock)
       } catch (_: ClassNotFoundException) {
       } catch (_: NoClassDefFoundError) {
       }
