@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.systems.VertexSorter
 import io.sc3.plethora.Plethora
+import io.sc3.plethora.gameplay.client.modules.glasses.Frame3dFramebuffer
 import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasClient
 import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasHandler.HEIGHT
 import io.sc3.plethora.gameplay.modules.glasses.canvas.CanvasHandler.WIDTH
@@ -14,6 +15,8 @@ import io.sc3.plethora.gameplay.modules.glasses.objects.ObjectRegistry.FRAME_3D
 import io.sc3.plethora.gameplay.modules.glasses.objects.Scalable
 import io.sc3.plethora.util.ByteBufUtils
 import io.sc3.plethora.util.DirtyingProperty
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.gui.DrawContext
@@ -46,6 +49,7 @@ class ObjectFrame3d(
     buf.writeFloat(scale)
   }
 
+  @Environment(EnvType.CLIENT)
   private fun renderCanvasToFramebuffer(
     canvas: CanvasClient,
     consumers: VertexConsumerProvider?,
@@ -75,6 +79,8 @@ class ObjectFrame3d(
     modelView.translate(0.0f, 0.0f, -2000.0f)
     RenderSystem.applyModelViewMatrix()
 
+    val framebuffer = Frame3dFramebuffer.framebuffer
+
     RenderSystem.colorMask(true, true, true, true)
     framebuffer.setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
     framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC)
@@ -93,6 +99,7 @@ class ObjectFrame3d(
     GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, currentBuffer)
   }
 
+  @Environment(EnvType.CLIENT)
   private fun renderFramebufferToWorld(
     ctx: DrawContext,
     w: Float,
@@ -119,7 +126,7 @@ class ObjectFrame3d(
     val matrix = matrices.peek().positionMatrix
 
     RenderSystem.setShader { GameRenderer.getPositionTexProgram() }
-    RenderSystem.setShaderTexture(0, framebuffer.colorAttachment)
+    RenderSystem.setShaderTexture(0, Frame3dFramebuffer.framebuffer.colorAttachment)
     RenderSystem.enableBlend()
 
     val hw = w / 2; val hh = h / 2
@@ -137,17 +144,11 @@ class ObjectFrame3d(
     matrices.pop()
   }
 
+  @Environment(EnvType.CLIENT)
   override fun draw(canvas: CanvasClient, ctx: DrawContext, consumers: VertexConsumerProvider?) {
     val w = WIDTH.toFloat(); val h = HEIGHT.toFloat()
     renderCanvasToFramebuffer(canvas, consumers, w, h)
 
     renderFramebufferToWorld(ctx, w, h)
-  }
-
-  companion object {
-    val framebuffer by lazy {
-      Plethora.log.debug("Creating ObjectFrame3d framebuffer with size $WIDTH x $HEIGHT")
-      SimpleFramebuffer(WIDTH, HEIGHT, true, true)
-    }
   }
 }
